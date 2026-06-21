@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animal Games 🐼</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#071207;color:#e8f5e9;font-family:'Segoe UI',Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+header{background:#0a1a0a;border-bottom:2px solid #2E7D32;padding:20px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.logo{font-size:28px;font-weight:900;color:#7CFC00;letter-spacing:3px;text-shadow:0 0 20px rgba(124,252,0,.4)}
+.logo span{color:#A5D6A7;font-size:14px;display:block;letter-spacing:1px;font-weight:400;margin-top:2px}
+.gh-link{color:#81C784;text-decoration:none;font-size:13px;border:1px solid #2E7D32;padding:6px 14px;border-radius:20px;transition:all .2s}
+.gh-link:hover{background:#2E7D32;color:white}
+main{flex:1;padding:50px 40px;max-width:1100px;margin:0 auto;width:100%}
+h2{color:#A5D6A7;font-size:13px;text-transform:uppercase;letter-spacing:3px;margin-bottom:30px;text-align:center}
+.games{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px;margin-bottom:60px}
+.card{background:#0d1f0d;border:1px solid #2E7D32;border-radius:14px;overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:pointer}
+.card:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(76,175,80,.25)}
+.card-banner{height:160px;display:flex;align-items:center;justify-content:center;font-size:72px;position:relative;overflow:hidden}
+.banner-crisis{background:linear-gradient(135deg,#071a07 0%,#1b5e20 50%,#37474f 100%)}
+.banner-feast{background:linear-gradient(135deg,#071a07 0%,#2e7d32 60%,#1b5e20 100%)}
+.banner-label{position:absolute;bottom:10px;right:12px;font-size:10px;background:rgba(0,0,0,.5);padding:3px 8px;border-radius:10px;color:#A5D6A7;letter-spacing:1px;text-transform:uppercase}
+.card-body{padding:20px}
+.card-body h3{font-size:18px;color:#7CFC00;margin-bottom:6px}
+.card-body .tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;margin-bottom:10px;font-weight:bold;letter-spacing:.5px}
+.tag-strategy{background:#1b5e20;color:#A5D6A7}
+.tag-arcade{background:#e65100;color:#FFE0B2}
+.card-body p{font-size:13px;color:#81C784;line-height:1.65;margin-bottom:16px}
+.features{list-style:none;margin-bottom:18px}
+.features li{font-size:11px;color:#558B2F;padding:3px 0;border-bottom:1px solid #0f200f}
+.features li::before{content:'✓ ';color:#4CAF50}
+.play-btn{display:block;width:100%;padding:12px;background:#2E7D32;color:#C8E6C9;text-align:center;text-decoration:none;border-radius:8px;font-weight:bold;font-size:14px;letter-spacing:.5px;transition:background .2s}
+.play-btn:hover{background:#388E3C}
+.divider{height:1px;background:linear-gradient(to right,transparent,#2E7D32,transparent);margin:50px 0}
+.about{text-align:center;color:#558B2F;font-size:13px;line-height:2}
+.about a{color:#4CAF50;text-decoration:none}
+.about a:hover{text-decoration:underline}
+.badges{display:flex;gap:8px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+.badge{font-size:11px;background:#0d1f0d;border:1px solid #2E7D32;padding:4px 10px;border-radius:12px;color:#81C784}
+footer{background:#0a1a0a;border-top:1px solid #1B5E20;padding:16px 40px;text-align:center;font-size:12px;color:#2E7D32}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🐼 ANIMAL GAMES<span>Wildlife Conservation Browser Games</span></div>
+  <a class="gh-link" href="https://github.com/Sreekant13/animal-games" target="_blank">⭐ View on GitHub</a>
+</header>
+
+<main>
+  <h2>Choose Your Game</h2>
+
+  <div class="games">
+    <div class="card" onclick="location.href='bamboo-crisis.html'">
+      <div class="card-banner banner-crisis">
+        🏙️🐼🎋
+        <span class="banner-label">Strategy</span>
+      </div>
+      <div class="card-body">
+        <h3>Bamboo Crisis</h3>
+        <span class="tag tag-strategy">Real-Time Strategy</span>
+        <p>Manage a panda sanctuary under siege from urban developers. Plant bamboo, build barriers, survive crises, and grow your panda population before the city consumes everything.</p>
+        <ul class="features">
+          <li>Named pandas with AI — hunger, stress, breeding, aging</li>
+          <li>Spring / Summer / Autumn / Winter seasons</li>
+          <li>8 random crisis events with strategic choices</li>
+          <li>Research tree — 3 permanent upgrades</li>
+          <li>Sound effects, speed controls, auto-save</li>
+        </ul>
+        <a class="play-btn" href="bamboo-crisis.html">▶ Play Bamboo Crisis</a>
+      </div>
+    </div>
+
+    <div class="card" onclick="location.href='panda-bamboo-game.html'">
+      <div class="card-banner banner-feast">
+        🎋🐼⭐
+        <span class="banner-label">Arcade</span>
+      </div>
+      <div class="card-body">
+        <h3>Panda's Bamboo Feast</h3>
+        <span class="tag tag-arcade">Arcade</span>
+        <p>A fast-paced arcade game. Move your panda left and right to catch falling bamboo stalks, build combo multipliers, and grab bonus stars — while dodging hazard balls!</p>
+        <ul class="features">
+          <li>Combo multiplier system (2× points on streaks)</li>
+          <li>Star pickups for bonus points</li>
+          <li>Speed and spawn rate increase each level</li>
+          <li>Particle effects and screen flash feedback</li>
+          <li>Mobile touch support</li>
+        </ul>
+        <a class="play-btn" href="panda-bamboo-game.html">▶ Play Bamboo Feast</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="badges">
+    <span class="badge">🌐 No Install Required</span>
+    <span class="badge">📦 Zero Dependencies</span>
+    <span class="badge">🎨 HTML5 Canvas</span>
+    <span class="badge">🔊 Web Audio API</span>
+    <span class="badge">📱 Mobile Friendly</span>
+    <span class="badge">📄 MIT License</span>
+  </div>
+
+  <div class="about">
+    Built with pure HTML5, Canvas API, and vanilla JavaScript — no frameworks, no build tools.<br>
+    <a href="https://github.com/Sreekant13/animal-games" target="_blank">View source on GitHub</a> &nbsp;·&nbsp;
+    <a href="https://github.com/Sreekant13/animal-games/blob/main/LICENSE" target="_blank">MIT License</a>
+  </div>
+</main>
+
+<footer>© 2026 Sreekant Baheti &nbsp;·&nbsp; MIT License &nbsp;·&nbsp; Made with 🐼 and HTML Canvas</footer>
+</body>
+</html>

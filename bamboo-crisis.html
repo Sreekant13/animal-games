@@ -7,50 +7,59 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a1a0a;color:#e8f5e9;font-family:'Segoe UI',Arial,sans-serif;display:flex;flex-direction:column;height:100vh;overflow:hidden}
-#topbar{background:#071207;border-bottom:2px solid #2E7D32;padding:6px 14px;display:flex;gap:18px;align-items:center;flex-shrink:0}
-.stat{display:flex;flex-direction:column;align-items:center;min-width:60px}
-.sv{font-size:17px;font-weight:bold;color:#A5D6A7}
-.sl{font-size:9px;color:#558B2F;text-transform:uppercase;letter-spacing:1px}
-#ttl{color:#7CFC00;font-size:15px;font-weight:bold;letter-spacing:2px;margin-right:8px;flex-shrink:0}
-.warn{color:#FF8F00!important}
-.crit{color:#F44336!important;animation:blink .8s infinite}
+#topbar{background:#071207;border-bottom:2px solid #2E7D32;padding:5px 12px;display:flex;gap:14px;align-items:center;flex-shrink:0;flex-wrap:wrap}
+.stat{display:flex;flex-direction:column;align-items:center;min-width:56px}
+.sv{font-size:16px;font-weight:bold;color:#A5D6A7}
+.sl{font-size:9px;color:#558B2F;text-transform:uppercase;letter-spacing:.8px}
+#ttl{color:#7CFC00;font-size:14px;font-weight:bold;letter-spacing:2px;flex-shrink:0;cursor:pointer;text-decoration:none}
+.warn{color:#FF8F00!important}.crit{color:#F44336!important;animation:blink .8s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.spdbtn{background:#1a2e1a;border:1px solid #2E7D32;color:#81C784;padding:3px 9px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:bold;transition:all .15s}
+.spdbtn:hover,.spdbtn.active{background:#2E7D32;color:white}
+.iconbtn{background:#1a2e1a;border:1px solid #2E7D32;color:#81C784;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:13px}
+.iconbtn:hover{background:#2E7D32}
 #main{display:flex;flex:1;overflow:hidden}
 #mapwrap{position:relative;flex-shrink:0}
 canvas{display:block;cursor:crosshair}
-#sidebar{width:230px;background:#071207;border-left:2px solid #1B5E20;display:flex;flex-direction:column;padding:8px;gap:6px;overflow-y:auto;flex-shrink:0}
+#sidebar{width:228px;background:#071207;border-left:2px solid #1B5E20;display:flex;flex-direction:column;padding:7px;gap:6px;overflow-y:auto;flex-shrink:0}
 .card{background:#0d1f0d;border:1px solid #2E7D32;border-radius:7px;padding:8px}
 .ch{font-size:10px;text-transform:uppercase;color:#558B2F;letter-spacing:1px;margin-bottom:6px}
-.btn{width:100%;padding:7px 8px;border:none;border-radius:5px;cursor:pointer;font-size:11px;font-weight:bold;letter-spacing:.4px;margin-bottom:3px;transition:filter .15s,transform .1s;text-align:left}
+.btn{width:100%;padding:6px 8px;border:none;border-radius:5px;cursor:pointer;font-size:11px;font-weight:bold;letter-spacing:.4px;margin-bottom:3px;transition:filter .15s,transform .1s;text-align:left}
 .btn:hover:not(:disabled){filter:brightness(1.25);transform:translateX(2px)}
 .btn:disabled{opacity:.35;cursor:not-allowed}
 .btn.active{outline:2px solid #FFD700}
-.bg{background:#2E7D32;color:#C8E6C9}
-.bb{background:#5D4037;color:#EFEBE9}
-.bc{background:#1565C0;color:#BBDEFB}
-.bo{background:#E65100;color:#FFE0B2}
-.br{background:#880E4F;color:#FCE4EC}
+.bg{background:#2E7D32;color:#C8E6C9}.bb{background:#5D4037;color:#EFEBE9}
+.bc{background:#1565C0;color:#BBDEFB}.bo{background:#E65100;color:#FFE0B2}
+.br{background:#880E4F;color:#FCE4EC}.bpu{background:#4A148C;color:#E1BEE7}
 .bcost{float:right;opacity:.6;font-weight:normal}
-#log{background:#071207;border-top:2px solid #1B5E20;padding:6px 12px;height:60px;overflow-y:auto;flex-shrink:0}
+#log{background:#071207;border-top:2px solid #1B5E20;padding:5px 12px;height:58px;overflow-y:auto;flex-shrink:0}
 #log div{font-size:10px;padding:1px 0;border-bottom:1px solid #0a150a}
 .lg{color:#81C784}.lb{color:#EF9A9A}.li{color:#90CAF9}.lw{color:#FFD54F}
-#ov{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0a1a0a;border:2px solid #F44336;border-radius:12px;padding:22px;z-index:200;width:320px;text-align:center;box-shadow:0 0 40px rgba(244,67,54,.5)}
+#ov{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0a1a0a;border:2px solid #F44336;border-radius:12px;padding:22px;z-index:200;width:330px;text-align:center;box-shadow:0 0 40px rgba(244,67,54,.5)}
 #ov h2{margin-bottom:8px}
 #ov p{color:#BDBDBD;font-size:12px;margin-bottom:14px;line-height:1.5}
 #ovb{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .ob{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-weight:bold;font-size:12px}
-.tt{position:absolute;background:#071207;border:1px solid #4CAF50;border-radius:5px;padding:5px 8px;font-size:10px;color:#C8E6C9;pointer-events:none;z-index:100;display:none;max-width:140px;line-height:1.5}
-#mind{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.8);border:1px solid #4CAF50;border-radius:4px;padding:3px 7px;font-size:10px;color:#A5D6A7;display:none;pointer-events:none}
+.tt{position:absolute;background:#071207;border:1px solid #4CAF50;border-radius:5px;padding:5px 8px;font-size:10px;color:#C8E6C9;pointer-events:none;z-index:100;display:none;max-width:150px;line-height:1.6}
+#mind{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.85);border:1px solid #4CAF50;border-radius:4px;padding:3px 7px;font-size:10px;color:#A5D6A7;display:none;pointer-events:none}
+.snrow{display:flex;gap:4px;align-items:center;margin-bottom:3px}
 </style>
 </head>
 <body>
 <div id="topbar">
-  <span id="ttl">🐼 BAMBOO CRISIS</span>
+  <a id="ttl" href="index.html">🐼 BAMBOO CRISIS</a>
   <div class="stat"><span class="sv" id="smo">Year 1, Mo 1</span><span class="sl">Time</span></div>
+  <div class="stat"><span class="sv" id="ssn">🌸 Spring</span><span class="sl">Season</span></div>
   <div class="stat"><span class="sv" id="sfn">$500</span><span class="sl">Funds</span></div>
   <div class="stat"><span class="sv" id="spd">0</span><span class="sl">Pandas</span></div>
   <div class="stat"><span class="sv" id="sin">+$0</span><span class="sl">Income/mo</span></div>
-  <div class="stat"><span class="sv" id="sth">Low</span><span class="sl">City Threat</span></div>
+  <div class="stat"><span class="sv" id="sth">Low</span><span class="sl">Threat</span></div>
+  <div style="display:flex;gap:4px;align-items:center;margin-left:4px">
+    <button class="spdbtn active" id="sp1" onclick="setSpeed(1)">1×</button>
+    <button class="spdbtn" id="sp2" onclick="setSpeed(2)">2×</button>
+    <button class="spdbtn" id="sp3" onclick="setSpeed(3)">3×</button>
+  </div>
+  <button class="iconbtn" id="sndbtn" onclick="toggleSound()" title="Toggle Sound">🔊</button>
   <div class="stat" style="margin-left:auto"><span class="sv" id="sgl">0/15</span><span class="sl">Win Goal</span></div>
 </div>
 <div id="main">
@@ -65,7 +74,7 @@ canvas{display:block;cursor:crosshair}
       <button class="btn bg" id="bpl" onclick="setMode('plant')">🎋 Plant Bamboo <span class="bcost">$40</span></button>
       <button class="btn bb" id="bbr" onclick="setMode('barrier')">🧱 Build Barrier <span class="bcost">$90</span></button>
       <button class="btn bc" id="bne" onclick="doNegotiate()">🤝 Negotiate <span class="bcost">$120</span></button>
-      <button class="btn bo" id="bca" onclick="doCampaign()">📢 Public Campaign <span class="bcost">$60</span></button>
+      <button class="btn bo" id="bca" onclick="doCampaign()">📢 Campaign <span class="bcost">$60</span></button>
       <button class="btn br" id="bem" onclick="doEmergency()">🚨 Emergency Grant <span class="bcost">Free×1</span></button>
     </div>
     <div class="card">
@@ -73,6 +82,14 @@ canvas{display:block;cursor:crosshair}
       <button class="btn bg" id="rhe" onclick="doResearch('health')">🧬 Panda Resilience <span class="bcost">$200</span></button>
       <button class="btn bo" id="rto" onclick="doResearch('tourism')">📸 Eco-Tourism <span class="bcost">$250</span></button>
       <button class="btn bc" id="rco" onclick="doResearch('corridor')">🌿 Corridor Growth <span class="bcost">$300</span></button>
+    </div>
+    <div class="card">
+      <div class="ch">Save / Load</div>
+      <div class="snrow">
+        <button class="btn bpu" style="flex:1;margin:0" onclick="saveGame()">💾 Save</button>
+        <button class="btn bc" style="flex:1;margin:0" onclick="loadGame()">📂 Load</button>
+      </div>
+      <div id="savetxt" style="font-size:10px;color:#558B2F;margin-top:4px;text-align:center">No save found</div>
     </div>
     <div class="card">
       <div class="ch">Sanctuary</div>
@@ -83,70 +100,66 @@ canvas{display:block;cursor:crosshair}
       <div id="cinf" style="font-size:11px;color:#A5D6A7;line-height:1.7">Click map to inspect</div>
     </div>
     <div class="card" style="font-size:10px;color:#558B2F;line-height:1.8">
-      <b style="color:#81C784">Keys:</b><br>
-      P — Pause/Resume<br>
-      Esc — Cancel mode<br>
-      <b style="color:#81C784">Goal:</b> 15 pandas survive 60 months
+      <b style="color:#81C784">Keys:</b> P Pause · Esc Cancel<br>
+      <b style="color:#81C784">Goal:</b> 15 pandas · 60 months
     </div>
   </div>
 </div>
-<div id="log"><div class="li">🐼 Welcome! Protect your pandas from urban encroachment.</div></div>
+<div id="log"></div>
 <div id="ov"><h2 id="ovt"></h2><p id="ovd"></p><div id="ovb"></div></div>
 
 <script>
 // ── Constants ──────────────────────────────────────────────────────
-const COLS=22,ROWS=15,CS=32;
-const W=COLS*CS,H=ROWS*CS;
+const COLS=22,ROWS=15,CS=32,W=COLS*CS,H=ROWS*CS;
 const EMPTY=0,BAMBOO=1,CITY=2,BARRIER=3,WATER=4;
 const CLR={[EMPTY]:'#7A8C5C',[BAMBOO]:'#2E7D32',[CITY]:'#546E7A',[BARRIER]:'#5D4037',[WATER]:'#1565C0'};
+const PANDA_NAMES=['Mei','Bao','Luna','Ming','Zhu','Ping','Hua','Lei','Xiu','Feng',
+  'Yun','Tian','Xiao','Da','Wei','Jing','Lian','Hao','Shu','Nan','Qi','Bo','Rui','Kai','Long','Chu'];
+const SEASONS={
+  spring:{label:'🌸 Spring',bambooBonus:4,hungerMod:-3,breedBonus:.12,crisisMod:-.03},
+  summer:{label:'☀️ Summer',bambooBonus:2,hungerMod:4,breedBonus:0,crisisMod:.06},
+  autumn:{label:'🍂 Autumn',bambooBonus:0,hungerMod:1,breedBonus:-.06,crisisMod:.02},
+  winter:{label:'❄️ Winter',bambooBonus:-5,hungerMod:7,breedBonus:-.15,crisisMod:0}
+};
+const SPEEDS={1:3000,2:1500,3:750};
+
+// ── Audio ──────────────────────────────────────────────────────────
+let audioCtx=null,soundOn=true;
+function ensureAudio(){if(!audioCtx)try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}
+function tone(freq,type,dur,vol,delay=0){
+  if(!soundOn)return;ensureAudio();if(!audioCtx)return;
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.connect(g);g.connect(audioCtx.destination);
+  o.type=type;o.frequency.setValueAtTime(freq,audioCtx.currentTime+delay);
+  g.gain.setValueAtTime(vol,audioCtx.currentTime+delay);
+  g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+delay+dur);
+  o.start(audioCtx.currentTime+delay);o.stop(audioCtx.currentTime+delay+dur+.01);
+}
+const snd={
+  plant:()=>{tone(600,'triangle',.12,.25);tone(800,'triangle',.08,.18,.1);},
+  barrier:()=>{tone(150,'square',.15,.3);tone(120,'square',.1,.2,.1);},
+  born:()=>{[523,659,784,1047].forEach((f,i)=>tone(f,'sine',.25,.35,i*.1));},
+  die:()=>{[300,240,180].forEach((f,i)=>tone(f,'sawtooth',.3,.3,i*.15));},
+  crisis:()=>{[500,400,300,500].forEach((f,i)=>tone(f,'sawtooth',.2,.3,i*.1));},
+  city:()=>{tone(90,'square',.12,.2);},
+  win:()=>{[523,659,784,1047,1319].forEach((f,i)=>tone(f,'sine',.4,.5,i*.12));},
+  lose:()=>{[400,350,300,250,200].forEach((f,i)=>tone(f,'sawtooth',.4,.35,i*.18));},
+  negotiate:()=>{[440,554,659].forEach((f,i)=>tone(f,'sine',.3,.3,i*.08));},
+  save:()=>{tone(800,'sine',.1,.2);tone(1000,'sine',.1,.2,.1);}
+};
+function toggleSound(){soundOn=!soundOn;document.getElementById('sndbtn').textContent=soundOn?'🔊':'🔇';}
 
 // ── State ──────────────────────────────────────────────────────────
 let grid=[],pandas=[],month=0,funds=500,mode=null;
 let negoMo=0,campMo=0,gameOver=false,paused=false,crisisLock=false;
-let emergUsed=false,ticker=null,pandaUID=0;
+let emergUsed=false,ticker=null,pandaUID=0,gameSpeed=1;
 let ups={health:false,tourism:false,corridor:false};
+let usedNames=new Set();
 
 // ── Canvas ─────────────────────────────────────────────────────────
 const canvas=document.getElementById('map');
-canvas.width=W; canvas.height=H;
+canvas.width=W;canvas.height=H;
 const ctx=canvas.getContext('2d');
-
-// ── Grid ───────────────────────────────────────────────────────────
-function makeGrid(){
-  grid=[];
-  for(let r=0;r<ROWS;r++){
-    grid[r]=[];
-    for(let c=0;c<COLS;c++){
-      const ed=Math.min(r,ROWS-1-r,c,COLS-1-c);
-      grid[r][c]={type: ed<2?CITY : ed<3&&Math.random()<.55?CITY : EMPTY};
-    }
-  }
-  // Core bamboo zone
-  for(let r=4;r<ROWS-4;r++)
-    for(let c=5;c<COLS-5;c++)
-      if(Math.random()<.68) grid[r][c]={type:BAMBOO};
-  // River
-  const rc=3+Math.floor(Math.random()*3);
-  for(let r=1;r<ROWS-1;r++){
-    grid[r][rc]={type:WATER};
-    if(Math.random()<.45&&rc+1<COLS-1) grid[r][rc+1]={type:WATER};
-  }
-  // Pond
-  const pr=2+Math.floor(Math.random()*3),pc=6+Math.floor(Math.random()*5);
-  for(let dr=0;dr<2;dr++) for(let dc=0;dc<3;dc++) grid[pr+dr][pc+dc]={type:WATER};
-}
-
-// ── Pandas ─────────────────────────────────────────────────────────
-function addPanda(r,c){
-  pandas.push({id:pandaUID++,r,c,hunger:15+Math.random()*20,stress:5+Math.random()*15,health:80+Math.random()*20,age:0});
-}
-
-function placePandas(){
-  const spots=[];
-  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(grid[r][c].type===BAMBOO) spots.push([r,c]);
-  shuffle(spots);
-  for(let i=0;i<6&&i<spots.length;i++) addPanda(spots[i][0],spots[i][1]);
-}
 
 // ── Helpers ────────────────────────────────────────────────────────
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -155,185 +168,183 @@ function adj(r,c){return[[r-1,c],[r+1,c],[r,c-1],[r,c+1]].filter(([rr,cc])=>rr>=
 function nearBamboo(r,c,d=1){for(let dr=-d;dr<=d;dr++)for(let dc=-d;dc<=d;dc++){const rr=r+dr,cc=c+dc;if(rr>=0&&rr<ROWS&&cc>=0&&cc<COLS&&grid[rr][cc].type===BAMBOO)return true;}return false;}
 function countType(t){let n=0;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(grid[r][c].type===t)n++;return n;}
 function calcIncome(){return 30+pandas.length*(ups.tourism?26:14);}
+function getSeason(){const m=((month-1)%12)+1;if(m>=3&&m<=5)return'spring';if(m>=6&&m<=8)return'summer';if(m>=9&&m<=11)return'autumn';return'winter';}
+function uniqueName(){const pool=PANDA_NAMES.filter(n=>!usedNames.has(n));if(!pool.length){usedNames.clear();return PANDA_NAMES[Math.floor(Math.random()*PANDA_NAMES.length)];}const n=pool[Math.floor(Math.random()*pool.length)];usedNames.add(n);return n;}
+
+// ── Grid ───────────────────────────────────────────────────────────
+function makeGrid(){
+  grid=[];
+  for(let r=0;r<ROWS;r++){grid[r]=[];for(let c=0;c<COLS;c++){const ed=Math.min(r,ROWS-1-r,c,COLS-1-c);grid[r][c]={type:ed<2?CITY:ed<3&&Math.random()<.55?CITY:EMPTY};}}
+  for(let r=4;r<ROWS-4;r++)for(let c=5;c<COLS-5;c++)if(Math.random()<.68)grid[r][c]={type:BAMBOO};
+  const rc=3+Math.floor(Math.random()*3);
+  for(let r=1;r<ROWS-1;r++){grid[r][rc]={type:WATER};if(Math.random()<.45&&rc+1<COLS-1)grid[r][rc+1]={type:WATER};}
+  const pr=2+Math.floor(Math.random()*3),pc=6+Math.floor(Math.random()*5);
+  for(let dr=0;dr<2;dr++)for(let dc=0;dc<3;dc++)grid[pr+dr][pc+dc]={type:WATER};
+}
+
+// ── Pandas ─────────────────────────────────────────────────────────
+function addPanda(r,c,name){
+  pandas.push({id:pandaUID++,r,c,name:name||uniqueName(),hunger:15+Math.random()*20,stress:5+Math.random()*15,health:80+Math.random()*20,age:0});
+}
+function placePandas(){
+  const spots=[];for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(grid[r][c].type===BAMBOO)spots.push([r,c]);
+  shuffle(spots);for(let i=0;i<6&&i<spots.length;i++)addPanda(spots[i][0],spots[i][1]);
+  addLog(`🐼 ${pandas.map(p=>p.name).join(', ')} begin their sanctuary life.`,'i');
+}
 
 // ── Drawing ────────────────────────────────────────────────────────
 function drawCell(r,c){
   const x=c*CS,y=r*CS,t=grid[r][c].type;
-  ctx.fillStyle=CLR[t]||'#333';
-  ctx.fillRect(x,y,CS,CS);
-
+  ctx.fillStyle=CLR[t]||'#333';ctx.fillRect(x,y,CS,CS);
   if(t===BAMBOO){
     ctx.strokeStyle='#1B5E20';ctx.lineWidth=.4;ctx.strokeRect(x,y,CS,CS);
-    // stalks
-    ctx.fillStyle='#66BB6A';
-    ctx.fillRect(x+CS*.32,y+2,3,CS-4);
-    ctx.fillRect(x+CS*.6,y+2,3,CS-4);
+    ctx.fillStyle='#66BB6A';ctx.fillRect(x+CS*.32,y+2,3,CS-4);ctx.fillRect(x+CS*.6,y+2,3,CS-4);
     ctx.fillStyle='#4CAF50';
     for(let i=1;i<3;i++){ctx.fillRect(x+CS*.3,y+i*(CS/3),7,2);ctx.fillRect(x+CS*.58,y+i*(CS/3)+4,7,2);}
     if((r+c)%3===0){ctx.fillStyle='#A5D6A7';ctx.beginPath();ctx.ellipse(x+CS*.5,y+5,6,3,.4,0,Math.PI*2);ctx.fill();}
-  } else if(t===CITY){
+  }else if(t===CITY){
     ctx.strokeStyle='#455A64';ctx.lineWidth=.4;ctx.strokeRect(x,y,CS,CS);
-    ctx.fillStyle='#607D8B';
-    ctx.fillRect(x+3,y+CS-10,7,10);ctx.fillRect(x+12,y+CS-14,8,14);ctx.fillRect(x+CS-11,y+CS-8,8,8);
-    ctx.fillStyle='rgba(255,249,196,.7)';
-    ctx.fillRect(x+4,y+CS-9,2,2);ctx.fillRect(x+7,y+CS-9,2,2);
-    ctx.fillRect(x+13,y+CS-12,2,2);ctx.fillRect(x+17,y+CS-12,2,2);
-  } else if(t===WATER){
+    ctx.fillStyle='#607D8B';ctx.fillRect(x+3,y+CS-10,7,10);ctx.fillRect(x+12,y+CS-14,8,14);ctx.fillRect(x+CS-11,y+CS-8,8,8);
+    ctx.fillStyle='rgba(255,249,196,.75)';ctx.fillRect(x+4,y+CS-9,2,2);ctx.fillRect(x+7,y+CS-9,2,2);ctx.fillRect(x+13,y+CS-12,2,2);ctx.fillRect(x+17,y+CS-12,2,2);
+  }else if(t===WATER){
     ctx.fillStyle='#1976D2';ctx.fillRect(x,y,CS,CS);
     ctx.strokeStyle='#64B5F6';ctx.lineWidth=1;
     for(let i=1;i<3;i++){ctx.beginPath();ctx.moveTo(x+3,y+i*(CS/3));ctx.quadraticCurveTo(x+CS/2,y+i*(CS/3)-3,x+CS-3,y+i*(CS/3));ctx.stroke();}
-  } else if(t===BARRIER){
+  }else if(t===BARRIER){
     ctx.strokeStyle='#4E342E';ctx.lineWidth=.4;ctx.strokeRect(x,y,CS,CS);
     ctx.fillStyle='#8D6E63';
     for(let row=0;row<3;row++){const off=row%2===0?0:CS/2;ctx.fillRect(x+(off%CS),y+row*10+2,CS/2-2,7);if(off===0)ctx.fillRect(x+CS/2+1,y+row*10+2,CS/2-2,7);}
-  } else {
-    // empty grass
+  }else{
     ctx.strokeStyle='#5C7A40';ctx.lineWidth=.3;ctx.strokeRect(x,y,CS,CS);
     if((r*7+c*13)%9===0){ctx.fillStyle='#6A8C4A';ctx.fillRect(x+4,y+CS-5,2,5);ctx.fillRect(x+8,y+CS-7,2,7);ctx.fillRect(x+CS-6,y+CS-4,2,4);}
   }
 }
 
+function drawSeasonOverlay(){
+  const s=getSeason();
+  if(s==='winter'){ctx.fillStyle='rgba(200,220,240,.06)';ctx.fillRect(0,0,W,H);}
+  else if(s==='autumn'){ctx.fillStyle='rgba(180,80,30,.04)';ctx.fillRect(0,0,W,H);}
+  else if(s==='spring'){ctx.fillStyle='rgba(80,200,80,.04)';ctx.fillRect(0,0,W,H);}
+}
+
 function drawPanda(p){
   const x=p.c*CS+CS/2,y=p.r*CS+CS/2,s=CS*.3;
-  // health ring
-  const h=p.health;
-  ctx.strokeStyle=h>60?'#4CAF50':h>30?'#FF9800':'#F44336';
+  ctx.strokeStyle=p.health>60?'#4CAF50':p.health>30?'#FF9800':'#F44336';
   ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,s+3.5,0,Math.PI*2);ctx.stroke();
-  // body
   ctx.fillStyle='white';ctx.beginPath();ctx.arc(x,y+1,s,0,Math.PI*2);ctx.fill();
-  // head
   ctx.beginPath();ctx.arc(x,y-s*.7,s*.76,0,Math.PI*2);ctx.fill();
-  // ears
   ctx.fillStyle='#1a1a1a';
   ctx.beginPath();ctx.arc(x-s*.54,y-s*1.26,s*.29,0,Math.PI*2);ctx.fill();
   ctx.beginPath();ctx.arc(x+s*.54,y-s*1.26,s*.29,0,Math.PI*2);ctx.fill();
-  // eye patches
   ctx.beginPath();ctx.arc(x-s*.3,y-s*.78,s*.25,0,Math.PI*2);ctx.fill();
   ctx.beginPath();ctx.arc(x+s*.3,y-s*.78,s*.25,0,Math.PI*2);ctx.fill();
-  // eyes
   ctx.fillStyle='white';
   ctx.beginPath();ctx.arc(x-s*.28,y-s*.8,s*.12,0,Math.PI*2);ctx.fill();
   ctx.beginPath();ctx.arc(x+s*.28,y-s*.8,s*.12,0,Math.PI*2);ctx.fill();
   ctx.fillStyle='#111';
   ctx.beginPath();ctx.arc(x-s*.26,y-s*.78,s*.07,0,Math.PI*2);ctx.fill();
   ctx.beginPath();ctx.arc(x+s*.3,y-s*.78,s*.07,0,Math.PI*2);ctx.fill();
-  // nose
   ctx.fillStyle='#555';ctx.beginPath();ctx.arc(x,y-s*.58,s*.1,0,Math.PI*2);ctx.fill();
-  // arms
   ctx.fillStyle='#1a1a1a';
   ctx.save();ctx.translate(x-s*.95,y+s*.2);ctx.rotate(-.3);ctx.beginPath();ctx.ellipse(0,0,s*.22,s*.55,0,0,Math.PI*2);ctx.fill();ctx.restore();
   ctx.save();ctx.translate(x+s*.95,y+s*.2);ctx.rotate(.3);ctx.beginPath();ctx.ellipse(0,0,s*.22,s*.55,0,0,Math.PI*2);ctx.fill();ctx.restore();
-  // legs
   ctx.beginPath();ctx.arc(x-s*.3,y+s*1.1,s*.32,0,Math.PI*2);ctx.fill();
   ctx.beginPath();ctx.arc(x+s*.3,y+s*1.1,s*.32,0,Math.PI*2);ctx.fill();
+  // mood
+  const mood=p.health>70&&p.stress<40?'😊':p.health>40&&p.stress<70?'😐':p.stress>70?'😰':'💀';
+  ctx.font=`${CS*.28}px serif`;ctx.textAlign='center';ctx.fillText(mood,x,y-s*1.7);
+  // name tag
+  ctx.fillStyle='rgba(0,0,0,.65)';const nw=p.name.length*5+6;ctx.fillRect(x-nw/2,y+s+6,nw,11);
+  ctx.fillStyle='#C8E6C9';ctx.font=`bold ${CS*.22}px Arial`;ctx.fillText(p.name,x,y+s+15);
   // hunger bar
-  const bw=CS*.7,bx=x-bw/2,by=y+s+5;
+  const bw=CS*.72,bx=x-bw/2,by=y+s+18;
   ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(bx,by,bw,3);
   ctx.fillStyle=p.hunger<60?'#4CAF50':p.hunger<80?'#FF9800':'#F44336';
   ctx.fillRect(bx,by,bw*(1-p.hunger/100),3);
 }
 
 function drawCityThreats(){
-  ctx.strokeStyle='rgba(244,67,54,.6)';ctx.lineWidth=1.5;
-  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
-    if(grid[r][c].type===CITY){
-      const border=adj(r,c).some(([rr,cc])=>grid[rr][cc].type!==CITY&&grid[rr][cc].type!==WATER);
-      if(border){ctx.strokeRect(c*CS+1,r*CS+1,CS-2,CS-2);}
-    }
-  }
+  ctx.strokeStyle='rgba(244,67,54,.55)';ctx.lineWidth=1.5;
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)
+    if(grid[r][c].type===CITY&&adj(r,c).some(([rr,cc])=>grid[rr][cc].type!==CITY&&grid[rr][cc].type!==WATER))
+      ctx.strokeRect(c*CS+1,r*CS+1,CS-2,CS-2);
 }
 
 function drawModeHint(){
   if(!mode)return;
-  ctx.fillStyle=mode==='plant'?'rgba(76,175,80,.22)':'rgba(93,64,55,.28)';
-  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+  ctx.fillStyle=mode==='plant'?'rgba(76,175,80,.2)':'rgba(93,64,55,.28)';
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
     const t=grid[r][c].type;
-    if(mode==='plant'&&t===EMPTY) ctx.fillRect(c*CS,r*CS,CS,CS);
-    if(mode==='barrier'&&(t===EMPTY||t===BAMBOO)){
-      if(adj(r,c).some(([rr,cc])=>grid[rr][cc].type===CITY)) ctx.fillRect(c*CS,r*CS,CS,CS);
-    }
+    if(mode==='plant'&&t===EMPTY)ctx.fillRect(c*CS,r*CS,CS,CS);
+    if(mode==='barrier'&&(t===EMPTY||t===BAMBOO)&&adj(r,c).some(([rr,cc])=>grid[rr][cc].type===CITY))ctx.fillRect(c*CS,r*CS,CS,CS);
   }
 }
 
 function render(){
   ctx.clearRect(0,0,W,H);
-  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) drawCell(r,c);
-  drawCityThreats();
-  drawModeHint();
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)drawCell(r,c);
+  drawSeasonOverlay();drawCityThreats();drawModeHint();
   pandas.forEach(drawPanda);
 }
 
 // ── Month Tick ─────────────────────────────────────────────────────
 function tick(){
   if(gameOver||paused||crisisLock)return;
-  month++;
-  funds+=calcIncome();
-  if(negoMo>0)negoMo--;
-  if(campMo>0)campMo--;
-  movePandas();
-  feedPandas();
-  breedPandas();
-  expandCity();
+  month++;funds+=calcIncome();
+  if(negoMo>0)negoMo--;if(campMo>0)campMo--;
+  movePandas();feedPandas();breedPandas();expandCity();
   if(ups.corridor&&Math.random()<.3)growCorridor();
-  if(month>3&&Math.random()<.18) triggerCrisis();
-  checkEnd();
-  updateUI();
-  render();
+  const se=SEASONS[getSeason()];
+  if(month>3&&Math.random()<.18+se.crisisMod)triggerCrisis();
+  if(month%5===0)autoSave();
+  checkEnd();updateUI();render();
 }
 
 // ── Panda AI ───────────────────────────────────────────────────────
 function movePandas(){
   pandas.forEach(p=>{
-    const options=adj(p.r,p.c).filter(([rr,cc])=>{const t=grid[rr][cc].type;return t===BAMBOO||t===EMPTY;});
-    if(!options.length)return;
-    const bambooOpts=options.filter(([rr,cc])=>grid[rr][cc].type===BAMBOO);
-    const pool=(bambooOpts.length>0&&p.hunger>25)?bambooOpts:options;
-    const[nr,nc]=pool[Math.floor(Math.random()*pool.length)];
-    p.r=nr;p.c=nc;
+    const opts=adj(p.r,p.c).filter(([rr,cc])=>{const t=grid[rr][cc].type;return t===BAMBOO||t===EMPTY;});
+    if(!opts.length)return;
+    const bOpts=opts.filter(([rr,cc])=>grid[rr][cc].type===BAMBOO);
+    const pool=bOpts.length>0&&p.hunger>25?bOpts:opts;
+    const[nr,nc]=pool[Math.floor(Math.random()*pool.length)];p.r=nr;p.c=nc;
   });
 }
 
 function feedPandas(){
+  const se=SEASONS[getSeason()];
   pandas.forEach(p=>{
-    p.hunger+=12;
-    const onB=grid[p.r][p.c].type===BAMBOO;
-    const nearB=nearBamboo(p.r,p.c,1);
-    if(onB)p.hunger-=24;
-    else if(nearB)p.hunger-=11;
+    p.hunger+=12+se.hungerMod;
+    const onB=grid[p.r][p.c].type===BAMBOO,nearB=nearBamboo(p.r,p.c,1);
+    if(onB)p.hunger-=24+se.bambooBonus;else if(nearB)p.hunger-=11+se.bambooBonus*.5;
     p.hunger=clamp(p.hunger,0,100);
-
-    if(!nearB)p.stress+=16; else p.stress-=6;
+    if(!nearB)p.stress+=16;else p.stress-=6;
     if(grid[p.r][p.c].type===CITY)p.stress+=20;
     p.stress=clamp(p.stress,0,100);
-
     const dmg=ups.health?.45:1;
-    if(p.hunger>78)p.health-=8*dmg;
-    if(p.stress>72)p.health-=5*dmg;
+    if(p.hunger>78)p.health-=8*dmg;if(p.stress>72)p.health-=5*dmg;
     if(p.hunger<40&&p.stress<35)p.health=Math.min(100,p.health+4);
-    p.health=clamp(p.health,0,100);
-    p.age++;
-    if(p.age>168)p.health-=3; // ~14yr lifespan
+    p.health=clamp(p.health,0,100);p.age++;if(p.age>168)p.health-=3;
   });
-  const before=pandas.length;
+  const died=pandas.filter(p=>p.health<=0).map(p=>p.name);
   pandas=pandas.filter(p=>p.health>0);
-  const died=before-pandas.length;
-  if(died>0)addLog(`💀 ${died} panda${died>1?'s':''} perished.`,'b');
+  if(died.length){snd.die();addLog(`💀 ${died.join(', ')} perished.`,'b');}
 }
 
 function breedPandas(){
   if(pandas.length<2)return;
+  const se=SEASONS[getSeason()];
   for(let i=0;i<pandas.length;i++){
     for(let j=i+1;j<pandas.length;j++){
       const a=pandas[i],b=pandas[j];
       if(Math.abs(a.r-b.r)<=1&&Math.abs(a.c-b.c)<=1
-        &&a.stress<42&&b.stress<42&&a.health>55&&b.health>55
-        &&a.age>18&&b.age>18&&Math.random()<.18){
+        &&a.stress<42&&b.stress<42&&a.health>55&&b.health>55&&a.age>18&&b.age>18
+        &&Math.random()<.18+se.breedBonus){
         const spots=adj(a.r,a.c).filter(([rr,cc])=>grid[rr][cc].type===BAMBOO);
         const[nr,nc]=spots.length?spots[0]:[a.r,a.c];
-        addPanda(nr,nc);
-        addLog(`🍼 A cub was born! Pandas: ${pandas.length}`,'g');
-        a.stress+=8;b.stress+=8;
-        return; // one birth per tick
+        const cub=uniqueName();addPanda(nr,nc,cub);snd.born();
+        addLog(`🍼 ${a.name} & ${b.name} had a cub — welcome, ${cub}! (Total: ${pandas.length})`,'g');
+        a.stress+=8;b.stress+=8;return;
       }
     }
   }
@@ -341,20 +352,12 @@ function breedPandas(){
 
 // ── City Expansion ─────────────────────────────────────────────────
 function expandCity(){
-  let base=.16;
-  if(negoMo>0)base*=.38;
-  if(campMo>0)base*=.6;
-  base=Math.min(base,.38);
-
+  let base=.16;if(negoMo>0)base*=.38;if(campMo>0)base*=.6;base=Math.min(base,.38);
   const cands=[];
-  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
     if(grid[r][c].type!==CITY&&grid[r][c].type!==WATER){
       const ca=adj(r,c).filter(([rr,cc])=>grid[rr][cc].type===CITY);
-      if(ca.length){
-        let ch=base*ca.length*.65;
-        if(grid[r][c].type===BARRIER)ch*=.08;
-        cands.push({r,c,ch});
-      }
+      if(ca.length){let ch=base*ca.length*.65;if(grid[r][c].type===BARRIER)ch*=.08;cands.push({r,c,ch});}
     }
   }
   let n=0;
@@ -363,86 +366,78 @@ function expandCity(){
       grid[r][c]={type:CITY};
       pandas.filter(p=>p.r===r&&p.c===c).forEach(p=>{
         const safe=adj(r,c).filter(([rr,cc])=>grid[rr][cc].type!==CITY);
-        if(safe.length){const[nr,nc]=safe[0];p.r=nr;p.c=nc;}
-        p.stress+=30;
-      });
-      n++;
+        if(safe.length){const[nr,nc]=safe[0];p.r=nr;p.c=nc;}p.stress+=30;
+      });n++;
     }
   });
-  if(n>0)addLog(`🏗️ City consumed ${n} cell${n>1?'s':''}!`,'b');
+  if(n>0){snd.city();addLog(`🏗️ City consumed ${n} cell${n>1?'s':''}!`,'b');}
 }
 
 function growCorridor(){
   const emp=[];
-  for(let r=1;r<ROWS-1;r++) for(let c=1;c<COLS-1;c++){
-    if(grid[r][c].type===EMPTY&&nearBamboo(r,c,1)&&!adj(r,c).some(([rr,cc])=>grid[rr][cc].type===CITY))
-      emp.push([r,c]);
-  }
-  if(emp.length&&Math.random()<.45){
-    const[r,c]=emp[Math.floor(Math.random()*emp.length)];
-    grid[r][c]={type:BAMBOO};
-    addLog('🌱 Bamboo corridor expanded naturally.','g');
-  }
+  for(let r=1;r<ROWS-1;r++)for(let c=1;c<COLS-1;c++)
+    if(grid[r][c].type===EMPTY&&nearBamboo(r,c,1)&&!adj(r,c).some(([rr,cc])=>grid[rr][cc].type===CITY))emp.push([r,c]);
+  if(emp.length&&Math.random()<.45){const[r,c]=emp[Math.floor(Math.random()*emp.length)];grid[r][c]={type:BAMBOO};addLog('🌱 Bamboo corridor expanded.','g');}
 }
 
 // ── Crises ─────────────────────────────────────────────────────────
 const CRISES=[
-  {title:'🦠 Disease Outbreak',desc:'Illness spreading through the bamboo forest, weakening your pandas.',ops:[
+  {title:'🦠 Disease Outbreak',desc:'Illness spreading through the bamboo, weakening pandas.',ops:[
     {l:'Quarantine ($80)',cost:80,fn:()=>{pandas.forEach(p=>{p.health-=12;p.stress+=10;});addLog('🦠 Quarantine limited damage.','w');}},
     {l:'Ignore (risky)',cost:0,fn:()=>{pandas.forEach(p=>{p.health-=35;p.stress+=22;});addLog('🦠 Disease ravaged pandas!','b');}}
   ]},
-  {title:'☀️ Bamboo Drought',desc:'Severe drought is killing bamboo. You must act immediately.',ops:[
-    {l:'Emergency Irrigation ($100)',cost:100,fn:()=>{addLog('💧 Irrigation saved the bamboo.','g');}},
+  {title:'☀️ Bamboo Drought',desc:'Severe drought is killing bamboo. Act immediately.',ops:[
+    {l:'Emergency Irrigation ($100)',cost:100,fn:()=>{addLog('💧 Irrigation saved bamboo.','g');}},
     {l:'Do nothing',cost:0,fn:()=>{let k=0;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(grid[r][c].type===BAMBOO&&Math.random()<.38){grid[r][c]={type:EMPTY};k++;}addLog(`☀️ Drought killed ${k} bamboo cells.`,'b');}}
   ]},
-  {title:'🔫 Poachers Sighted!',desc:'Poachers have been spotted near the border. Pandas are at risk.',ops:[
+  {title:'🔫 Poachers Sighted!',desc:'Poachers at the border. Pandas are at risk.',ops:[
     {l:'Hire Rangers ($120)',cost:120,fn:()=>{addLog('👮 Rangers drove off poachers.','g');}},
-    {l:'Call Police (free, risky)',cost:0,fn:()=>{if(Math.random()<.45&&pandas.length>0){pandas.splice(Math.floor(Math.random()*pandas.length),1);addLog('🔫 A panda was taken.','b');}else addLog('🚓 Police arrived in time.','g');}}
+    {l:'Call Police (free, risky)',cost:0,fn:()=>{if(Math.random()<.45&&pandas.length>0){const p=pandas.splice(Math.floor(Math.random()*pandas.length),1)[0];addLog(`🔫 ${p.name} was taken by poachers.`,'b');}else addLog('🚓 Police arrived in time.','g');}}
   ]},
-  {title:'🏢 Developer Rezoning!',desc:'A developer is lobbying to convert your buffer zone into housing.',ops:[
-    {l:'Legal Challenge ($150)',cost:150,fn:()=>{negoMo+=5;addLog('⚖️ Challenge stalled development 5 months.','g');}},
+  {title:'🏢 Developer Rezoning!',desc:'A developer is lobbying to rezone your buffer zone into housing.',ops:[
+    {l:'Legal Challenge ($150)',cost:150,fn:()=>{negoMo+=5;addLog('⚖️ Legal challenge stalled development 5 months.','g');}},
     {l:'Accept compromise',cost:0,fn:()=>{let n=0;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(grid[r][c].type===EMPTY&&adj(r,c).some(([rr,cc])=>grid[rr][cc].type===CITY)&&n<7){grid[r][c]={type:CITY};n++;}addLog(`🏢 Developer rezoned ${n} buffer cells.`,'b');}}
   ]},
-  {title:'📺 Documentary Crew',desc:'A film crew wants to shoot a viral climate documentary at your sanctuary!',ops:[
-    {l:'Welcome them! (+$320)',cost:0,fn:()=>{funds+=320;addLog('📺 Documentary raised $320 in donations!','g');}},
-    {l:'Decline (avoid panda stress)',cost:0,fn:()=>{addLog('🙅 Crew declined. Pandas undisturbed.','i');}}
+  {title:'📺 Documentary Crew',desc:'A film crew wants to shoot at your sanctuary — viral attention = huge donations!',ops:[
+    {l:'Welcome them! (+$320)',cost:0,fn:()=>{funds+=320;addLog('📺 Documentary raised $320!','g');}},
+    {l:'Decline (avoid stress)',cost:0,fn:()=>{addLog('🙅 Crew declined. Pandas undisturbed.','i');}}
   ]},
-  {title:'🌊 Flash Flood Warning',desc:'Torrential rain threatens to flood low-lying bamboo zones.',ops:[
-    {l:'Dig drainage ($90)',cost:90,fn:()=>{addLog('🌿 Drainage protected the bamboo.','g');}},
+  {title:'🌊 Flash Flood Warning',desc:'Heavy rains threaten the low-lying bamboo zones.',ops:[
+    {l:'Dig Drainage ($90)',cost:90,fn:()=>{addLog('🌿 Drainage protected bamboo.','g');}},
     {l:'Hope for the best',cost:0,fn:()=>{let n=0;for(let r=ROWS-5;r<ROWS;r++)for(let c=0;c<COLS;c++)if(grid[r][c].type===BAMBOO&&Math.random()<.42){grid[r][c]={type:WATER};n++;}addLog(`🌊 Flood converted ${n} bamboo cells.`,'b');}}
   ]},
   {title:'🏛️ Government Grant!',desc:'A conservation agency is offering an emergency matching grant.',ops:[
-    {l:'Apply now (+$280)',cost:0,fn:()=>{funds+=280;addLog('🏛️ Conservation grant awarded: +$280!','g');}},
-    {l:'Redirect effort elsewhere',cost:0,fn:()=>{addLog('📋 Grant declined.','i');}}
+    {l:'Apply now (+$280)',cost:0,fn:()=>{funds+=280;addLog('🏛️ Grant awarded: +$280!','g');}},
+    {l:'Redirect effort',cost:0,fn:()=>{addLog('📋 Grant declined.','i');}}
   ]},
-  {title:'🐘 Invasive Species',desc:'An invasive plant is choking bamboo roots throughout the sanctuary.',ops:[
+  {title:'🐛 Invasive Species',desc:'An invasive plant is choking bamboo roots across the sanctuary.',ops:[
     {l:'Eradication ($110)',cost:110,fn:()=>{addLog('🌿 Invasive species removed.','g');}},
-    {l:'Let it spread',cost:0,fn:()=>{let n=0;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(grid[r][c].type===BAMBOO&&Math.random()<.25){grid[r][c]={type:EMPTY};n++;}addLog(`🌿 Invasive plant damaged ${n} bamboo cells.`,'b');}}
+    {l:'Let it spread',cost:0,fn:()=>{let n=0;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(grid[r][c].type===BAMBOO&&Math.random()<.25){grid[r][c]={type:EMPTY};n++;}addLog(`🐛 Invasive plant damaged ${n} bamboo cells.`,'b');}}
+  ]},
+  {title:'😢 Lonely Panda Alert',desc:'A panda has been isolated too long. Critical stress levels detected.',ops:[
+    {l:'Relocation Program ($70)',cost:70,fn:()=>{if(pandas.length>0){const p=pandas.reduce((a,b)=>a.stress>b.stress?a:b);p.stress=Math.max(0,p.stress-40);addLog(`💚 ${p.name} relocated near friends.`,'g');}}},
+    {l:'Leave them be',cost:0,fn:()=>{pandas.forEach(p=>{if(p.stress>60)p.stress=Math.min(100,p.stress+15);});addLog('😢 Isolated pandas grew more stressed.','b');}}
+  ]},
+  {title:'🌡️ Heatwave!',desc:'Record temperatures are stressing all wildlife. Bamboo is wilting.',ops:[
+    {l:'Water & shade stations ($130)',cost:130,fn:()=>{pandas.forEach(p=>{p.stress=Math.max(0,p.stress-15);});addLog('💦 Stations reduced panda stress.','g');}},
+    {l:'Wait it out',cost:0,fn:()=>{let k=0;pandas.forEach(p=>{p.hunger+=20;p.stress+=18;});for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(grid[r][c].type===BAMBOO&&Math.random()<.15){grid[r][c]={type:EMPTY};k++;}addLog(`🌡️ Heatwave stressed all pandas and killed ${k} bamboo cells.`,'b');}}
   ]}
 ];
 
 function triggerCrisis(){
   if(crisisLock)return;
-  crisisLock=true; paused=true;
+  crisisLock=true;paused=true;snd.crisis();
   const cr=CRISES[Math.floor(Math.random()*CRISES.length)];
   document.getElementById('ovt').textContent=cr.title;
   document.getElementById('ovt').style.color='#F44336';
   document.getElementById('ovd').textContent=cr.desc;
-  const ob=document.getElementById('ovb'); ob.innerHTML='';
+  const ob=document.getElementById('ovb');ob.innerHTML='';
   cr.ops.forEach(op=>{
-    const btn=document.createElement('button');
-    btn.className='ob';
-    btn.style.background=op.cost>0?'#1565C0':'#2E7D32';
-    btn.style.color='white';
-    btn.textContent=op.label||op.l;
+    const btn=document.createElement('button');btn.className='ob';
+    btn.style.background=op.cost>0?'#1565C0':'#2E7D32';btn.style.color='white';
+    btn.textContent=op.l;
     if(op.cost>0&&funds<op.cost){btn.disabled=true;btn.style.opacity='.4';}
-    btn.onclick=()=>{
-      if(op.cost>0)funds-=op.cost;
-      op.fn();
-      document.getElementById('ov').style.display='none';
-      crisisLock=false; paused=false;
-      updateUI(); render();
-    };
+    btn.onclick=()=>{if(op.cost>0)funds-=op.cost;op.fn();document.getElementById('ov').style.display='none';crisisLock=false;paused=false;updateUI();render();};
     ob.appendChild(btn);
   });
   document.getElementById('ov').style.display='block';
@@ -455,117 +450,102 @@ function setMode(m){
   document.querySelectorAll('.btn').forEach(b=>b.classList.remove('active'));
   if(mode){
     el.style.display='block';
-    el.textContent=mode==='plant'?'🎋 Click empty cells to plant bamboo ($40 each)':'🧱 Click cells adjacent to city ($90 each)';
+    el.textContent=mode==='plant'?'🎋 Click empty cells to plant bamboo ($40)':'🧱 Click cells adjacent to city ($90)';
     document.getElementById(mode==='plant'?'bpl':'bbr').classList.add('active');
-  } else el.style.display='none';
+  }else el.style.display='none';
   render();
 }
-
-function doNegotiate(){
-  if(funds<120){addLog('⚠️ Need $120 to negotiate.','w');return;}
-  funds-=120; negoMo+=5;
-  addLog('🤝 Deal struck! City expansion reduced for 5 months.','g');
-  updateUI();
-}
-
-function doCampaign(){
-  if(funds<60){addLog('⚠️ Need $60 for campaign.','w');return;}
-  funds-=60; campMo+=4;
-  addLog('📢 Public campaign launched! Expansion slowed 4 months.','g');
-  updateUI();
-}
-
-function doEmergency(){
-  if(emergUsed){addLog('⚠️ Emergency grant already used.','w');return;}
-  emergUsed=true; funds+=250;
-  addLog('🚨 Emergency conservation grant: +$250! (One-time)','g');
-  updateUI();
-}
-
+function doNegotiate(){if(funds<120){addLog('⚠️ Need $120.','w');return;}funds-=120;negoMo+=5;snd.negotiate();addLog('🤝 Deal struck! City expansion reduced for 5 months.','g');updateUI();}
+function doCampaign(){if(funds<60){addLog('⚠️ Need $60.','w');return;}funds-=60;campMo+=4;addLog('📢 Campaign launched! Expansion slowed 4 months.','g');updateUI();}
+function doEmergency(){if(emergUsed){addLog('⚠️ Grant already used.','w');return;}emergUsed=true;funds+=250;addLog('🚨 Emergency grant: +$250! (One-time)','g');updateUI();}
 function doResearch(type){
-  if(ups[type]){addLog('Already researched.','i');return;}
-  const costs={health:200,tourism:250,corridor:300};
-  const cost=costs[type];
-  if(funds<cost){addLog(`⚠️ Need $${cost} for research.`,'w');return;}
-  funds-=cost; ups[type]=true;
-  const el=document.getElementById('r'+type.slice(0,2));
-  if(el){el.disabled=true;el.style.opacity='.4';}
-  const nm={health:'Panda Resilience',tourism:'Eco-Tourism',corridor:'Corridor Growth'};
-  addLog(`🔬 Unlocked: ${nm[type]}!`,'g');
+  if(ups[type])return;
+  const costs={health:200,tourism:250,corridor:300},cost=costs[type];
+  if(funds<cost){addLog(`⚠️ Need $${cost}.`,'w');return;}
+  funds-=cost;ups[type]=true;
+  const ids={health:'rhe',tourism:'rto',corridor:'rco'};
+  const el=document.getElementById(ids[type]);if(el){el.disabled=true;el.style.opacity='.4';}
+  addLog(`🔬 Unlocked: ${{health:'Panda Resilience',tourism:'Eco-Tourism',corridor:'Corridor Growth'}[type]}!`,'g');
   updateUI();
 }
+function setSpeed(s){gameSpeed=s;[1,2,3].forEach(i=>document.getElementById('sp'+i).classList.toggle('active',i===s));clearInterval(ticker);ticker=setInterval(tick,SPEEDS[s]);}
 
-// ── Win/Lose ───────────────────────────────────────────────────────
+// ── Save / Load ────────────────────────────────────────────────────
+function autoSave(){
+  try{localStorage.setItem('bamboo-crisis-v2',JSON.stringify({month,funds,grid,pandas,negoMo,campMo,emergUsed,ups,usedNames:[...usedNames],ts:Date.now()}));
+  document.getElementById('savetxt').textContent='Auto-saved at '+new Date().toLocaleTimeString();}catch(e){}
+}
+function saveGame(){
+  try{localStorage.setItem('bamboo-crisis-v2',JSON.stringify({month,funds,grid,pandas,negoMo,campMo,emergUsed,ups,usedNames:[...usedNames],ts:Date.now()}));
+  document.getElementById('savetxt').textContent='Saved at '+new Date().toLocaleTimeString();snd.save();addLog('💾 Game saved.','i');}catch(e){}
+}
+function loadGame(){
+  try{
+    const raw=localStorage.getItem('bamboo-crisis-v2');if(!raw){addLog('No save found.','w');return;}
+    const d=JSON.parse(raw);
+    month=d.month;funds=d.funds;grid=d.grid;pandas=d.pandas;negoMo=d.negoMo;campMo=d.campMo;emergUsed=d.emergUsed;ups=d.ups;
+    usedNames=new Set(d.usedNames||[]);pandaUID=pandas.reduce((mx,p)=>Math.max(mx,p.id+1),0);
+    gameOver=false;paused=false;crisisLock=false;
+    document.getElementById('ov').style.display='none';
+    document.getElementById('savetxt').textContent='Loaded (saved '+new Date(d.ts).toLocaleTimeString()+')';
+    addLog(`📂 Game loaded — Month ${month}.`,'i');
+    clearInterval(ticker);ticker=setInterval(tick,SPEEDS[gameSpeed]);
+    updateUI();render();
+  }catch(e){addLog('Failed to load save.','b');}
+}
+function checkSaveExists(){try{const raw=localStorage.getItem('bamboo-crisis-v2');if(raw){const d=JSON.parse(raw);document.getElementById('savetxt').textContent='Save from Mo.'+d.month+' found';}}catch(e){}}
+
+// ── Win / Lose ──────────────────────────────────────────────────────
 function checkEnd(){
   if(gameOver)return;
-  if(pandas.length===0){endGame(false,'All pandas have died. The sanctuary stands empty. 💔');return;}
-  if(countType(BAMBOO)<4){addLog('⚠️ CRITICAL: Bamboo almost gone!','w');}
+  if(pandas.length===0){endGame(false,'All pandas have perished. The sanctuary stands silent. 💔');return;}
+  if(countType(BAMBOO)<4)addLog('⚠️ CRITICAL: Almost no bamboo left!','w');
   if(countType(CITY)>COLS*ROWS*.87){endGame(false,'The city consumed the entire sanctuary. 🏙️');return;}
-  if(pandas.length>=15&&month>=60){endGame(true,`Victory! ${pandas.length} pandas thrive after ${month} months of conservation! 🎉`);}
+  if(pandas.length>=15&&month>=60)endGame(true,`Victory! ${pandas.length} pandas thrive after ${month} months! 🌿`);
 }
-
 function endGame(won,msg){
-  gameOver=true; paused=true;
-  clearInterval(ticker);
+  gameOver=true;paused=true;clearInterval(ticker);
+  won?snd.win():snd.lose();
   document.getElementById('ovt').textContent=won?'🎉 Victory!':'💔 Sanctuary Lost';
   document.getElementById('ovt').style.color=won?'#4CAF50':'#F44336';
   document.getElementById('ovd').textContent=msg;
-  const ob=document.getElementById('ovb'); ob.innerHTML='';
-  const rb=document.createElement('button');
-  rb.className='ob'; rb.style.background='#2E7D32'; rb.style.color='white';
-  rb.textContent='Play Again';
-  rb.onclick=()=>{document.getElementById('ov').style.display='none';initGame();};
+  const ob=document.getElementById('ovb');ob.innerHTML='';
+  const rb=document.createElement('button');rb.className='ob';rb.style.background='#2E7D32';rb.style.color='white';
+  rb.textContent='Play Again';rb.onclick=()=>{document.getElementById('ov').style.display='none';initGame();};
   ob.appendChild(rb);
   document.getElementById('ov').style.display='block';
   addLog(msg,won?'g':'b');
 }
 
-// ── UI ──────────────────────────────────────────────────────────────
+// ── UI Update ──────────────────────────────────────────────────────
 function addLog(msg,type='i'){
-  const el=document.getElementById('log');
-  const d=document.createElement('div');
-  d.className='l'+type;
-  d.textContent=`Mo.${month} — ${msg}`;
-  el.insertBefore(d,el.firstChild);
-  while(el.children.length>25)el.removeChild(el.lastChild);
+  const el=document.getElementById('log'),d=document.createElement('div');
+  d.className='l'+type;d.textContent=`Mo.${month} — ${msg}`;
+  el.insertBefore(d,el.firstChild);while(el.children.length>30)el.removeChild(el.lastChild);
 }
-
 function updateUI(){
   const yr=Math.floor(month/12)+1,mo=month%12+1;
   document.getElementById('smo').textContent=`Year ${yr}, Mo ${mo}`;
+  document.getElementById('ssn').textContent=SEASONS[getSeason()].label;
   document.getElementById('sfn').textContent=`$${funds}`;
   document.getElementById('spd').textContent=pandas.length;
   document.getElementById('sin').textContent=`+$${calcIncome()}`;
-
   const threat=negoMo>0||campMo>0?'Low':'Medium';
-  const te=document.getElementById('sth');
-  te.textContent=threat; te.className='sv'+(threat==='Low'?'':' warn');
-
-  const ge=document.getElementById('sgl');
-  ge.textContent=`${pandas.length}/15`;
-  ge.className='sv'+(pandas.length>=15?' lg':'');
-
+  const te=document.getElementById('sth');te.textContent=threat;te.className='sv'+(threat==='Low'?'':' warn');
+  document.getElementById('sgl').textContent=`${pandas.length}/15`;
   const ah=pandas.length?Math.round(pandas.reduce((s,p)=>s+p.hunger,0)/pandas.length):0;
   const as_=pandas.length?Math.round(pandas.reduce((s,p)=>s+p.stress,0)/pandas.length):0;
   const aH=pandas.length?Math.round(pandas.reduce((s,p)=>s+p.health,0)/pandas.length):0;
   document.getElementById('sdtl').innerHTML=
-    `🎋 Bamboo: ${countType(BAMBOO)} cells<br>`+
-    `🏙️ City: ${countType(CITY)} cells<br>`+
-    `🐼 Pandas: ${pandas.length}<br>`+
-    `🍽️ Avg Hunger: ${ah}%<br>`+
-    `😰 Avg Stress: ${as_}%<br>`+
-    `❤️ Avg Health: ${aH}%<br>`+
-    `🤝 Negotiation: ${negoMo>0?negoMo+' mo left':'—'}<br>`+
-    `📢 Campaign: ${campMo>0?campMo+' mo left':'—'}`;
-
-  document.getElementById('bpl').disabled=funds<40;
-  document.getElementById('bbr').disabled=funds<90;
-  document.getElementById('bne').disabled=funds<120;
-  document.getElementById('bca').disabled=funds<60;
+    `🎋 Bamboo: ${countType(BAMBOO)} cells<br>🏙️ City: ${countType(CITY)} cells<br>`+
+    `🐼 Pandas: ${pandas.length}<br>🍽️ Avg Hunger: ${ah}%<br>😰 Avg Stress: ${as_}%<br>`+
+    `❤️ Avg Health: ${aH}%<br>🤝 Nego: ${negoMo>0?negoMo+' mo':'—'}<br>📢 Campaign: ${campMo>0?campMo+' mo':'—'}`;
+  document.getElementById('bpl').disabled=funds<40;document.getElementById('bbr').disabled=funds<90;
+  document.getElementById('bne').disabled=funds<120;document.getElementById('bca').disabled=funds<60;
   document.getElementById('bem').disabled=emergUsed;
-  if(!ups.health) document.getElementById('rhe').disabled=funds<200;
-  if(!ups.tourism) document.getElementById('rto').disabled=funds<250;
-  if(!ups.corridor) document.getElementById('rco').disabled=funds<300;
+  if(!ups.health)document.getElementById('rhe').disabled=funds<200;
+  if(!ups.tourism)document.getElementById('rto').disabled=funds<250;
+  if(!ups.corridor)document.getElementById('rco').disabled=funds<300;
 }
 
 // ── Input ──────────────────────────────────────────────────────────
@@ -575,61 +555,48 @@ canvas.addEventListener('click',e=>{
   const c=Math.floor(mx/CS),r=Math.floor(my/CS);
   if(r<0||r>=ROWS||c<0||c>=COLS)return;
   const t=grid[r][c].type;
-
   if(mode==='plant'){
-    if(t===EMPTY&&funds>=40){grid[r][c]={type:BAMBOO};funds-=40;addLog(`🎋 Bamboo planted (${c},${r}).`,'g');updateUI();render();}
-    else if(funds<40)addLog('⚠️ Need $40 to plant bamboo.','w');
-    else addLog('Can only plant on empty cells.','i');
-  } else if(mode==='barrier'){
+    if(t===EMPTY&&funds>=40){grid[r][c]={type:BAMBOO};funds-=40;snd.plant();addLog(`🎋 Bamboo planted at (${c},${r}).`,'g');updateUI();render();}
+    else if(funds<40)addLog('⚠️ Need $40.','w');else addLog('Can only plant on empty cells.','i');
+  }else if(mode==='barrier'){
     const ac=adj(r,c).some(([rr,cc])=>grid[rr][cc].type===CITY);
-    if((t===EMPTY||t===BAMBOO)&&ac&&funds>=90){grid[r][c]={type:BARRIER};funds-=90;addLog(`🧱 Barrier built (${c},${r}).`,'g');updateUI();render();}
-    else if(!ac)addLog('Barriers must touch city cells.','w');
-    else if(funds<90)addLog('⚠️ Need $90 for barrier.','w');
-  } else {
-    const nm={[EMPTY]:'Empty Grass',[BAMBOO]:'Bamboo Forest',[CITY]:'Urban Area',[BARRIER]:'Barrier Wall',[WATER]:'River/Water'};
+    if((t===EMPTY||t===BAMBOO)&&ac&&funds>=90){grid[r][c]={type:BARRIER};funds-=90;snd.barrier();addLog(`🧱 Barrier at (${c},${r}).`,'g');updateUI();render();}
+    else if(!ac)addLog('Barriers must touch city cells.','w');else if(funds<90)addLog('⚠️ Need $90.','w');
+  }else{
+    const nm={[EMPTY]:'Empty Grass',[BAMBOO]:'Bamboo Forest',[CITY]:'Urban Area',[BARRIER]:'Barrier Wall',[WATER]:'Water'};
     const here=pandas.filter(p=>p.r===r&&p.c===c);
-    let html=`<b>${nm[t]||'?'}</b><br>`;
-    if(here.length) html+=here.map(p=>`Panda HP:${Math.round(p.health)}% | Hunger:${Math.round(p.hunger)}%`).join('<br>');
-    else html+='No pandas here';
-    document.getElementById('cinf').innerHTML=html;
+    document.getElementById('cinf').innerHTML=`<b>${nm[t]||'?'}</b><br>`+(here.length?here.map(p=>`🐼 ${p.name}<br>HP:${Math.round(p.health)}% | Hunger:${Math.round(p.hunger)}% | Stress:${Math.round(p.stress)}%`).join('<br><br>'):'No pandas here');
   }
 });
-
 canvas.addEventListener('mousemove',e=>{
   const rect=canvas.getBoundingClientRect();
   const mx=(e.clientX-rect.left)*(W/rect.width),my=(e.clientY-rect.top)*(H/rect.height);
   const c=Math.floor(mx/CS),r=Math.floor(my/CS);
   const tt=document.getElementById('tt');
   if(r<0||r>=ROWS||c<0||c>=COLS){tt.style.display='none';return;}
-  const here=pandas.filter(p=>p.r===r&&p.c===c);
-  const t=grid[r][c].type;
+  const here=pandas.filter(p=>p.r===r&&p.c===c),t=grid[r][c].type;
   if(here.length||t===CITY||t===BAMBOO||t===BARRIER){
-    tt.style.display='block';
-    tt.style.left=(c*CS+CS+4)+'px'; tt.style.top=Math.max(0,r*CS-10)+'px';
+    tt.style.display='block';tt.style.left=(c*CS+CS+4)+'px';tt.style.top=Math.max(0,r*CS-10)+'px';
     const nm={[EMPTY]:'Grass',[BAMBOO]:'Bamboo',[CITY]:'City',[BARRIER]:'Barrier',[WATER]:'Water'};
-    tt.innerHTML=`<b>${nm[t]}</b>${here.length?'<br>'+here.map(p=>`🐼 HP:${Math.round(p.health)}%`).join('<br>'):''}`;
-  } else tt.style.display='none';
+    tt.innerHTML=`<b>${nm[t]}</b>${here.length?'<br>'+here.map(p=>`🐼 ${p.name} ❤️${Math.round(p.health)}%`).join('<br>'):''}`;
+  }else tt.style.display='none';
 });
-
 canvas.addEventListener('mouseleave',()=>document.getElementById('tt').style.display='none');
-
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){mode=null;setMode(null);}
   if((e.key==='p'||e.key==='P')&&!crisisLock&&!gameOver){paused=!paused;addLog(paused?'⏸ Paused':'▶ Resumed','i');}
 });
 
-// ── Init ───────────────────────────────────────────────────────────
+// ── Init ────────────────────────────────────────────────────────────
 function initGame(){
-  month=0; funds=500; mode=null; negoMo=0; campMo=0;
-  gameOver=false; paused=false; crisisLock=false; emergUsed=false; pandaUID=0;
-  ups={health:false,tourism:false,corridor:false};
-  ['he','to','co'].forEach(k=>{const el=document.getElementById('r'+k);if(el){el.disabled=false;el.style.opacity='1';}});
+  month=0;funds=500;mode=null;negoMo=0;campMo=0;
+  gameOver=false;paused=false;crisisLock=false;emergUsed=false;pandaUID=0;
+  ups={health:false,tourism:false,corridor:false};usedNames=new Set();
+  ['rhe','rto','rco'].forEach(id=>{const el=document.getElementById(id);if(el){el.disabled=false;el.style.opacity='1';}});
   document.getElementById('mind').style.display='none';
-  makeGrid(); placePandas();
-  updateUI(); render();
-  addLog(`🐼 Sanctuary opened with ${pandas.length} pandas. Survive 60 months with 15+ pandas!`,'i');
-  clearInterval(ticker);
-  ticker=setInterval(tick,3000);
+  setSpeed(1);makeGrid();placePandas();checkSaveExists();
+  updateUI();render();
+  addLog(`🌿 Sanctuary opens — ${SEASONS[getSeason()].label}. Reach 15 pandas in 60 months!`,'i');
 }
 
 initGame();
