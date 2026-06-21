@@ -39,12 +39,17 @@
 </style>
 </head>
 <body>
-<h1>🐼 PANDA'S BAMBOO FEAST 🎋</h1>
+<div id="topnav" style="background:#071207;border-bottom:1px solid #2E7D32;padding:8px 20px;display:flex;align-items:center;justify-content:space-between">
+  <a href="index.html" style="color:#7CFC00;font-weight:900;font-size:13px;letter-spacing:2px;text-decoration:none">🐼 ANIMAL GAMES</a>
+  <div id="nav-user"></div>
+</div>
+<h1 style="margin-top:10px">🐼 PANDA'S BAMBOO FEAST 🎋</h1>
 <canvas id="c" width="420" height="520"></canvas>
 <div id="controls">
   ← → Arrow Keys or A/D to move &nbsp;|&nbsp; Tap left/right side on mobile
 </div>
 
+<script src="auth.js"></script>
 <script>
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
@@ -339,7 +344,7 @@ function update() {
         burst(it.x+13, it.y+13, '#EF5350', '💥', 8);
         floatText(it.x+13, it.y, '-LIFE', '#EF5350');
         flashTimer=12; flashColor='rgba(255,0,0,1)';
-        if (lives <= 0) { hiScore = Math.max(hiScore, score); state='gameover'; }
+        if (lives <= 0) { hiScore = Math.max(hiScore, score); Auth.saveScore('bamboo-feast', score); state='gameover'; }
       }
       items.splice(i,1);
       continue;
@@ -347,7 +352,7 @@ function update() {
 
     if (it.y > H) {
       if (it.type === 'bamboo') { lives--; combo=0; flashTimer=8; flashColor='rgba(255,100,0,1)';
-        if(lives<=0){ hiScore=Math.max(hiScore,score); state='gameover'; } }
+        if(lives<=0){ hiScore=Math.max(hiScore,score); Auth.saveScore('bamboo-feast', score); state='gameover'; } }
       items.splice(i,1);
     }
   }
@@ -438,6 +443,15 @@ canvas.addEventListener('touchend', e => {
 }, {passive:false});
 
 loop();
+
+Auth.init();
+const _u=Auth.getUser();
+const _nu=document.getElementById('nav-user');
+if(_u){
+  _nu.innerHTML=`<a href="profile.html" style="display:flex;align-items:center;gap:6px;background:#0d1f0d;border:1px solid #2E7D32;border-radius:20px;padding:3px 10px 3px 4px;text-decoration:none" onmouseover="this.style.borderColor='#4CAF50'" onmouseout="this.style.borderColor='#2E7D32'"><div style="width:22px;height:22px;border-radius:50%;background:${_u.color||'#2E7D32'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:white">${_u.initials||'?'}</div><span style="font-size:11px;color:#A5D6A7;font-weight:600">${_u.name.split(' ')[0]}</span></a>`;
+}else{
+  _nu.innerHTML=`<a href="login.html?r=panda-bamboo-game.html" style="padding:4px 12px;background:#2E7D32;color:white;border-radius:12px;text-decoration:none;font-size:11px;font-weight:bold">Sign In</a>`;
+}
 </script>
 </body>
 </html>

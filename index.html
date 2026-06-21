@@ -7,109 +7,249 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#071207;color:#e8f5e9;font-family:'Segoe UI',Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column}
-header{background:#0a1a0a;border-bottom:2px solid #2E7D32;padding:20px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.logo{font-size:28px;font-weight:900;color:#7CFC00;letter-spacing:3px;text-shadow:0 0 20px rgba(124,252,0,.4)}
-.logo span{color:#A5D6A7;font-size:14px;display:block;letter-spacing:1px;font-weight:400;margin-top:2px}
-.gh-link{color:#81C784;text-decoration:none;font-size:13px;border:1px solid #2E7D32;padding:6px 14px;border-radius:20px;transition:all .2s}
-.gh-link:hover{background:#2E7D32;color:white}
-main{flex:1;padding:50px 40px;max-width:1100px;margin:0 auto;width:100%}
-h2{color:#A5D6A7;font-size:13px;text-transform:uppercase;letter-spacing:3px;margin-bottom:30px;text-align:center}
-.games{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px;margin-bottom:60px}
-.card{background:#0d1f0d;border:1px solid #2E7D32;border-radius:14px;overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:pointer}
-.card:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(76,175,80,.25)}
-.card-banner{height:160px;display:flex;align-items:center;justify-content:center;font-size:72px;position:relative;overflow:hidden}
-.banner-crisis{background:linear-gradient(135deg,#071a07 0%,#1b5e20 50%,#37474f 100%)}
-.banner-feast{background:linear-gradient(135deg,#071a07 0%,#2e7d32 60%,#1b5e20 100%)}
-.banner-label{position:absolute;bottom:10px;right:12px;font-size:10px;background:rgba(0,0,0,.5);padding:3px 8px;border-radius:10px;color:#A5D6A7;letter-spacing:1px;text-transform:uppercase}
-.card-body{padding:20px}
-.card-body h3{font-size:18px;color:#7CFC00;margin-bottom:6px}
-.card-body .tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;margin-bottom:10px;font-weight:bold;letter-spacing:.5px}
+.bg{position:fixed;inset:0;background:radial-gradient(ellipse at 10% 90%,rgba(46,125,50,.14) 0%,transparent 50%),radial-gradient(ellipse at 90% 10%,rgba(46,125,50,.1) 0%,transparent 50%);pointer-events:none;z-index:0}
+
+/* ── Nav ── */
+nav{position:sticky;top:0;z-index:10;background:#0a1a0aee;backdrop-filter:blur(12px);border-bottom:1px solid #1B5E20;padding:12px 36px;display:flex;align-items:center;gap:16px}
+.nav-logo{color:#7CFC00;font-weight:900;font-size:18px;letter-spacing:2px;text-decoration:none;margin-right:auto}
+.nav-logo span{color:#558B2F;font-size:11px;display:block;letter-spacing:1px;font-weight:400;margin-top:1px}
+.nav-btn{padding:7px 18px;border-radius:20px;font-size:12px;font-weight:bold;cursor:pointer;text-decoration:none;border:none;transition:all .2s;letter-spacing:.3px}
+.btn-ghost{background:transparent;border:1px solid #2E7D32;color:#81C784}.btn-ghost:hover{background:#2E7D32;color:white}
+.btn-solid{background:#2E7D32;color:white}.btn-solid:hover{filter:brightness(1.15)}
+
+/* Avatar chip */
+.user-chip{display:flex;align-items:center;gap:8px;background:#0d1f0d;border:1px solid #2E7D32;border-radius:20px;padding:5px 14px 5px 6px;cursor:pointer;text-decoration:none;transition:border-color .2s}
+.user-chip:hover{border-color:#4CAF50}
+.user-chip .ava{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:white}
+.user-chip .uname{font-size:12px;color:#A5D6A7;font-weight:600}
+
+/* ── Hero ── */
+.hero{position:relative;z-index:1;text-align:center;padding:64px 24px 48px}
+.hero h1{font-size:clamp(32px,6vw,56px);font-weight:900;color:#7CFC00;letter-spacing:4px;text-shadow:0 0 40px rgba(124,252,0,.2);margin-bottom:12px}
+.hero p{color:#558B2F;font-size:15px;letter-spacing:.5px;margin-bottom:28px}
+.hero-badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.hbadge{font-size:11px;background:#0d1f0d;border:1px solid #1B5E20;padding:4px 12px;border-radius:12px;color:#81C784}
+
+/* ── Category sections ── */
+main{position:relative;z-index:1;max-width:1100px;margin:0 auto;width:100%;padding:0 32px 64px}
+.cat-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;margin-top:44px}
+.cat-header h2{font-size:13px;text-transform:uppercase;letter-spacing:2px;color:#A5D6A7;font-weight:700}
+.cat-header .line{flex:1;height:1px;background:linear-gradient(to right,#2E7D32,transparent)}
+.cat-header .cat-tag{font-size:10px;background:#0d1f0d;border:1px solid #1B5E20;padding:3px 10px;border-radius:10px;color:#558B2F}
+
+/* ── Game cards ── */
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:22px}
+.card{background:#0d1f0d;border:1px solid #2E7D32;border-radius:14px;overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:pointer;text-decoration:none;display:block;color:inherit}
+.card:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(76,175,80,.2),0 0 0 1px #4CAF50}
+.card.locked{cursor:default;pointer-events:none;opacity:.5}
+.card.locked:hover{transform:none;box-shadow:none}
+.card-banner{height:148px;display:flex;align-items:center;justify-content:center;font-size:60px;position:relative;overflow:hidden;gap:8px}
+.banner-1{background:linear-gradient(135deg,#071a07,#1b5e20 55%,#37474f)}
+.banner-2{background:linear-gradient(135deg,#071a07,#2e7d32 60%,#1b5e20)}
+.banner-lock{background:linear-gradient(135deg,#0a0a0a,#1a1a1a)}
+.card-tag{position:absolute;top:10px;right:10px;font-size:9px;padding:3px 9px;border-radius:10px;font-weight:bold;letter-spacing:.5px}
 .tag-strategy{background:#1b5e20;color:#A5D6A7}
 .tag-arcade{background:#e65100;color:#FFE0B2}
-.card-body p{font-size:13px;color:#81C784;line-height:1.65;margin-bottom:16px}
-.features{list-style:none;margin-bottom:18px}
-.features li{font-size:11px;color:#558B2F;padding:3px 0;border-bottom:1px solid #0f200f}
-.features li::before{content:'✓ ';color:#4CAF50}
-.play-btn{display:block;width:100%;padding:12px;background:#2E7D32;color:#C8E6C9;text-align:center;text-decoration:none;border-radius:8px;font-weight:bold;font-size:14px;letter-spacing:.5px;transition:background .2s}
+.tag-soon{background:#37474F;color:#90A4AE}
+.card-body{padding:18px}
+.card-body h3{font-size:16px;color:#7CFC00;margin-bottom:4px}
+.card-body .sub{font-size:11px;color:#558B2F;margin-bottom:10px}
+.card-body p{font-size:12px;color:#81C784;line-height:1.6;margin-bottom:14px}
+.card-feats{list-style:none;margin-bottom:14px}
+.card-feats li{font-size:11px;color:#558B2F;padding:2px 0}
+.card-feats li::before{content:'✓ ';color:#4CAF50}
+.play-btn{display:block;padding:10px;background:#2E7D32;color:#C8E6C9;text-align:center;border-radius:7px;font-weight:bold;font-size:13px;transition:background .2s;text-decoration:none}
 .play-btn:hover{background:#388E3C}
-.divider{height:1px;background:linear-gradient(to right,transparent,#2E7D32,transparent);margin:50px 0}
-.about{text-align:center;color:#558B2F;font-size:13px;line-height:2}
-.about a{color:#4CAF50;text-decoration:none}
-.about a:hover{text-decoration:underline}
-.badges{display:flex;gap:8px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
-.badge{font-size:11px;background:#0d1f0d;border:1px solid #2E7D32;padding:4px 10px;border-radius:12px;color:#81C784}
-footer{background:#0a1a0a;border-top:1px solid #1B5E20;padding:16px 40px;text-align:center;font-size:12px;color:#2E7D32}
+.soon-btn{display:block;padding:10px;background:#1a1a1a;color:#558B2F;text-align:center;border-radius:7px;font-size:13px}
+.hs-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.hs-label{font-size:10px;color:#558B2F}
+.hs-val{font-size:13px;font-weight:bold;color:#FFD700}
+
+/* ── Footer ── */
+footer{position:relative;z-index:1;background:#0a1a0a;border-top:1px solid #1B5E20;padding:20px 36px;text-align:center;font-size:12px;color:#2E7D32;margin-top:auto}
+footer a{color:#4CAF50;text-decoration:none}.footer a:hover{text-decoration:underline}
+.footer-inner{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
 </style>
 </head>
 <body>
-<header>
-  <div class="logo">🐼 ANIMAL GAMES<span>Wildlife Conservation Browser Games</span></div>
-  <a class="gh-link" href="https://github.com/Sreekant13/animal-games" target="_blank">⭐ View on GitHub</a>
-</header>
+<div class="bg"></div>
+
+<nav>
+  <a class="nav-logo" href="index.html">🐼 ANIMAL GAMES<span>Wildlife Gaming Portal</span></a>
+  <div id="nav-auth"></div>
+</nav>
+
+<div class="hero">
+  <h1>ANIMAL GAMES</h1>
+  <p>Browser-based wildlife games — no install, just play</p>
+  <div class="hero-badges">
+    <span class="hbadge">🌐 Plays in Browser</span>
+    <span class="hbadge">📦 Zero Dependencies</span>
+    <span class="hbadge">🎨 HTML5 Canvas</span>
+    <span class="hbadge">📱 Mobile Friendly</span>
+    <span class="hbadge">🔊 Web Audio</span>
+  </div>
+</div>
 
 <main>
-  <h2>Choose Your Game</h2>
-
+  <!-- ── Panda Universe ── -->
+  <div class="cat-header">
+    <h2>🐼 Panda Universe</h2>
+    <div class="line"></div>
+    <div class="cat-tag">2 Games Available</div>
+  </div>
   <div class="games">
-    <div class="card" onclick="location.href='bamboo-crisis.html'">
-      <div class="card-banner banner-crisis">
+    <a class="card" href="bamboo-crisis.html">
+      <div class="card-banner banner-1">
         🏙️🐼🎋
-        <span class="banner-label">Strategy</span>
+        <span class="card-tag tag-strategy">Strategy</span>
       </div>
       <div class="card-body">
         <h3>Bamboo Crisis</h3>
-        <span class="tag tag-strategy">Real-Time Strategy</span>
-        <p>Manage a panda sanctuary under siege from urban developers. Plant bamboo, build barriers, survive crises, and grow your panda population before the city consumes everything.</p>
-        <ul class="features">
-          <li>Named pandas with AI — hunger, stress, breeding, aging</li>
-          <li>Spring / Summer / Autumn / Winter seasons</li>
-          <li>8 random crisis events with strategic choices</li>
-          <li>Research tree — 3 permanent upgrades</li>
-          <li>Sound effects, speed controls, auto-save</li>
+        <div class="sub">Real-Time Conservation Strategy</div>
+        <div class="hs-row" id="hs-crisis" style="display:none">
+          <span class="hs-label">🏆 Your Best</span>
+          <span class="hs-val" id="hs-crisis-val">—</span>
+        </div>
+        <p>Manage a panda sanctuary under urban siege. Plant bamboo, survive crises, and grow your panda population before the city consumes everything.</p>
+        <ul class="card-feats">
+          <li>Named pandas with mood & health AI</li>
+          <li>4 seasons, 10 crisis events</li>
+          <li>Research tree + save/load system</li>
         </ul>
-        <a class="play-btn" href="bamboo-crisis.html">▶ Play Bamboo Crisis</a>
+        <span class="play-btn">▶ Play Now</span>
       </div>
-    </div>
+    </a>
 
-    <div class="card" onclick="location.href='panda-bamboo-game.html'">
-      <div class="card-banner banner-feast">
+    <a class="card" href="panda-bamboo-game.html">
+      <div class="card-banner banner-2">
         🎋🐼⭐
-        <span class="banner-label">Arcade</span>
+        <span class="card-tag tag-arcade">Arcade</span>
       </div>
       <div class="card-body">
-        <h3>Panda's Bamboo Feast</h3>
-        <span class="tag tag-arcade">Arcade</span>
-        <p>A fast-paced arcade game. Move your panda left and right to catch falling bamboo stalks, build combo multipliers, and grab bonus stars — while dodging hazard balls!</p>
-        <ul class="features">
-          <li>Combo multiplier system (2× points on streaks)</li>
-          <li>Star pickups for bonus points</li>
-          <li>Speed and spawn rate increase each level</li>
-          <li>Particle effects and screen flash feedback</li>
-          <li>Mobile touch support</li>
+        <h3>Bamboo Feast</h3>
+        <div class="sub">Fast-Paced Arcade Catcher</div>
+        <div class="hs-row" id="hs-feast" style="display:none">
+          <span class="hs-label">🏆 Your Best</span>
+          <span class="hs-val" id="hs-feast-val">—</span>
+        </div>
+        <p>Move your panda left and right to catch falling bamboo stalks. Build combos, grab bonus stars, and dodge hazards as speed ramps up.</p>
+        <ul class="card-feats">
+          <li>Combo multiplier system</li>
+          <li>Star pickups & particle effects</li>
+          <li>Level scaling difficulty</li>
         </ul>
-        <a class="play-btn" href="panda-bamboo-game.html">▶ Play Bamboo Feast</a>
+        <span class="play-btn">▶ Play Now</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- ── Coming Soon ── -->
+  <div class="cat-header">
+    <h2>🔮 Coming Soon</h2>
+    <div class="line"></div>
+    <div class="cat-tag">In Development</div>
+  </div>
+  <div class="games">
+    <div class="card locked">
+      <div class="card-banner banner-lock">
+        🦒🌍🔭
+        <span class="card-tag tag-soon">Coming Soon</span>
+      </div>
+      <div class="card-body">
+        <h3>Giraffe Watchtower</h3>
+        <div class="sub">Wildlife Detective</div>
+        <p>Identify individual giraffes by their unique spot patterns across the savanna. Track movements, solve mysteries, solve who's missing.</p>
+        <ul class="card-feats">
+          <li>Procedural giraffe spot generation</li>
+          <li>Deductive reasoning mechanics</li>
+          <li>Season & migration system</li>
+        </ul>
+        <span class="soon-btn">🔒 Coming Soon</span>
       </div>
     </div>
-  </div>
 
-  <div class="divider"></div>
+    <div class="card locked">
+      <div class="card-banner banner-lock">
+        🐼🥋⚡
+        <span class="card-tag tag-soon">Coming Soon</span>
+      </div>
+      <div class="card-body">
+        <h3>Panda Sumo</h3>
+        <div class="sub">Physics Fighter</div>
+        <p>Two pandas on crumbling bamboo platforms. Use weight and momentum to tip the platform and send opponents flying — physics-based chaos.</p>
+        <ul class="card-feats">
+          <li>Destructible bamboo arenas</li>
+          <li>Local 2-player support</li>
+          <li>Weight & momentum physics</li>
+        </ul>
+        <span class="soon-btn">🔒 Coming Soon</span>
+      </div>
+    </div>
 
-  <div class="badges">
-    <span class="badge">🌐 No Install Required</span>
-    <span class="badge">📦 Zero Dependencies</span>
-    <span class="badge">🎨 HTML5 Canvas</span>
-    <span class="badge">🔊 Web Audio API</span>
-    <span class="badge">📱 Mobile Friendly</span>
-    <span class="badge">📄 MIT License</span>
-  </div>
-
-  <div class="about">
-    Built with pure HTML5, Canvas API, and vanilla JavaScript — no frameworks, no build tools.<br>
-    <a href="https://github.com/Sreekant13/animal-games" target="_blank">View source on GitHub</a> &nbsp;·&nbsp;
-    <a href="https://github.com/Sreekant13/animal-games/blob/main/LICENSE" target="_blank">MIT License</a>
+    <div class="card locked">
+      <div class="card-banner banner-lock">
+        🌲🦁🗺️
+        <span class="card-tag tag-soon">Coming Soon</span>
+      </div>
+      <div class="card-body">
+        <h3>Wildlife Escape</h3>
+        <div class="sub">Narrative Survival</div>
+        <p>Survive as a wild animal navigating a shrinking habitat. Find food, avoid danger, raise offspring, and outlast the encroaching human world.</p>
+        <ul class="card-feats">
+          <li>Procedural world generation</li>
+          <li>Day/night & seasonal cycle</li>
+          <li>Branching narrative outcomes</li>
+        </ul>
+        <span class="soon-btn">🔒 Coming Soon</span>
+      </div>
+    </div>
   </div>
 </main>
 
-<footer>© 2026 Sreekant Baheti &nbsp;·&nbsp; MIT License &nbsp;·&nbsp; Made with 🐼 and HTML Canvas</footer>
+<footer>
+  <div class="footer-inner">
+    <a href="https://github.com/Sreekant13/animal-games" target="_blank">⭐ GitHub</a>
+    <a href="https://github.com/Sreekant13/animal-games/blob/main/LICENSE" target="_blank">MIT License</a>
+    <a href="profile.html">My Profile</a>
+  </div>
+  © 2026 Sreekant Baheti · Made with 🐼 and HTML Canvas
+</footer>
+
+<script src="auth.js"></script>
+<script>
+Auth.init();
+const user = Auth.getUser();
+
+// Render nav auth state
+const navAuth = document.getElementById('nav-auth');
+if (user) {
+  navAuth.innerHTML = `
+    <a class="user-chip" href="profile.html">
+      <div class="ava" style="background:${user.color||'#2E7D32'}">${user.initials||'?'}</div>
+      <span class="uname">${user.name.split(' ')[0]}</span>
+    </a>`;
+  // Show high scores
+  const crisis = Auth.getScore('bamboo-crisis');
+  const feast  = Auth.getScore('bamboo-feast');
+  if (crisis > 0) {
+    document.getElementById('hs-crisis').style.display = 'flex';
+    document.getElementById('hs-crisis-val').textContent = crisis;
+  }
+  if (feast > 0) {
+    document.getElementById('hs-feast').style.display = 'flex';
+    document.getElementById('hs-feast-val').textContent = feast;
+  }
+} else {
+  navAuth.innerHTML = `
+    <a class="nav-btn btn-ghost" href="login.html">Sign In</a>
+    <a class="nav-btn btn-solid" href="login.html?tab=up">Create Account</a>`;
+}
+
+// Pass tab param to login page
+document.querySelectorAll('a[href="login.html?tab=up"]').forEach(a => {
+  a.addEventListener('click', () => sessionStorage.setItem('loginTab','up'));
+});
+</script>
 </body>
 </html>

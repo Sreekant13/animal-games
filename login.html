@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — Animal Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#071207;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Segoe UI',Arial,sans-serif;color:#e8f5e9;padding:20px}
+.bg{position:fixed;inset:0;background:radial-gradient(ellipse at 15% 85%,rgba(46,125,50,.18) 0%,transparent 55%),radial-gradient(ellipse at 85% 15%,rgba(46,125,50,.12) 0%,transparent 55%);pointer-events:none}
+.back{position:fixed;top:18px;left:18px;color:#558B2F;text-decoration:none;font-size:13px;display:flex;align-items:center;gap:6px;transition:color .2s}
+.back:hover{color:#81C784}
+.card{position:relative;z-index:1;background:#0d1f0d;border:1px solid #2E7D32;border-radius:16px;padding:36px 40px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 50px rgba(76,175,80,.07)}
+.logo{text-align:center;margin-bottom:28px}
+.logo-icon{font-size:52px;display:block;margin-bottom:10px;filter:drop-shadow(0 4px 12px rgba(76,175,80,.3))}
+.logo h1{color:#7CFC00;font-size:20px;letter-spacing:3px;font-weight:900}
+.logo p{color:#558B2F;font-size:12px;margin-top:5px;letter-spacing:.5px}
+.tabs{display:flex;background:#071207;border-radius:10px;padding:3px;margin-bottom:24px;border:1px solid #1B5E20}
+.tab{flex:1;padding:9px;text-align:center;border:none;background:transparent;color:#558B2F;font-size:13px;font-weight:bold;cursor:pointer;border-radius:7px;transition:all .2s;letter-spacing:.3px}
+.tab.active{background:#2E7D32;color:white;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.global-msg{border-radius:8px;padding:11px 14px;font-size:12px;margin-bottom:18px;display:none;line-height:1.5}
+.global-msg.err{background:rgba(244,67,54,.1);border:1px solid rgba(244,67,54,.4);color:#EF9A9A}
+.global-msg.ok{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.4);color:#A5D6A7}
+.global-msg.show{display:block}
+.field{margin-bottom:15px}
+.field label{display:block;font-size:10px;color:#558B2F;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600}
+.input-wrap{position:relative}
+.input-wrap .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;opacity:.7}
+.input-wrap input{width:100%;padding:12px 14px 12px 40px;background:#071207;border:1px solid #2E7D32;border-radius:8px;color:#e8f5e9;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s}
+.input-wrap input::placeholder{color:#2E7D32}
+.input-wrap input:focus{border-color:#4CAF50;box-shadow:0 0 0 3px rgba(76,175,80,.12)}
+.input-wrap input.invalid{border-color:#EF5350}
+.err-txt{color:#EF9A9A;font-size:11px;margin-top:5px;display:none}
+.err-txt.show{display:block}
+.row{display:flex;gap:10px}
+.row .field{flex:1}
+.submit{width:100%;padding:13px;background:linear-gradient(135deg,#2E7D32,#388E3C);border:none;border-radius:9px;color:white;font-size:15px;font-weight:bold;letter-spacing:.4px;cursor:pointer;margin-top:6px;transition:all .2s;position:relative;overflow:hidden}
+.submit:hover:not(:disabled){filter:brightness(1.12);transform:translateY(-1px);box-shadow:0 8px 24px rgba(46,125,50,.35)}
+.submit:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.divider{text-align:center;color:#2E7D32;font-size:11px;margin:18px 0;position:relative;letter-spacing:1px}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:44%;height:1px;background:linear-gradient(to right,transparent,#1B5E20)}
+.divider::before{left:0}.divider::after{right:0;background:linear-gradient(to left,transparent,#1B5E20)}
+.guest{width:100%;padding:11px;background:transparent;border:1px solid #2E7D32;border-radius:9px;color:#81C784;font-size:13px;cursor:pointer;transition:all .2s;letter-spacing:.3px}
+.guest:hover{background:rgba(46,125,50,.12);border-color:#4CAF50}
+.foot{text-align:center;margin-top:22px;font-size:12px;color:#558B2F}
+.foot a{color:#4CAF50;text-decoration:none}.foot a:hover{text-decoration:underline}
+.strength{height:3px;border-radius:2px;margin-top:6px;background:#1B5E20;overflow:hidden;display:none}
+.strength-bar{height:100%;border-radius:2px;transition:width .3s,background .3s}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<a class="back" href="index.html">← Back to games</a>
+
+<div class="card">
+  <div class="logo">
+    <span class="logo-icon">🐼</span>
+    <h1>ANIMAL GAMES</h1>
+    <p>Your wildlife gaming portal</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-in" onclick="switchTab('in')">Sign In</button>
+    <button class="tab" id="tab-up" onclick="switchTab('up')">Create Account</button>
+  </div>
+
+  <div class="global-msg" id="gmsg"></div>
+
+  <form id="frm" onsubmit="handleSubmit(event)" novalidate>
+    <div class="field" id="f-name" style="display:none">
+      <label>Full Name</label>
+      <div class="input-wrap">
+        <span class="ico">👤</span>
+        <input type="text" id="i-name" placeholder="Your name" autocomplete="name">
+      </div>
+      <div class="err-txt" id="e-name"></div>
+    </div>
+
+    <div class="field">
+      <label>Email Address</label>
+      <div class="input-wrap">
+        <span class="ico">✉️</span>
+        <input type="email" id="i-email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="err-txt" id="e-email"></div>
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <div class="input-wrap">
+        <span class="ico">🔒</span>
+        <input type="password" id="i-pass" placeholder="••••••••" autocomplete="current-password" oninput="checkStrength()">
+      </div>
+      <div class="strength" id="strength-wrap"><div class="strength-bar" id="strength-bar"></div></div>
+      <div class="err-txt" id="e-pass"></div>
+    </div>
+
+    <div class="field" id="f-conf" style="display:none">
+      <label>Confirm Password</label>
+      <div class="input-wrap">
+        <span class="ico">🔒</span>
+        <input type="password" id="i-conf" placeholder="••••••••" autocomplete="new-password">
+      </div>
+      <div class="err-txt" id="e-conf"></div>
+    </div>
+
+    <button type="submit" class="submit" id="sub-btn">Sign In</button>
+  </form>
+
+  <div class="divider">OR</div>
+  <button class="guest" onclick="location.href='index.html'">🎮 Continue as Guest</button>
+
+  <div class="foot" id="foot">
+    Don't have an account? <a href="#" onclick="switchTab('up');return false">Create one free</a>
+  </div>
+</div>
+
+<script src="auth.js"></script>
+<script>
+let tab = 'in';
+
+Auth.init();
+if (Auth.getUser()) location.href = 'index.html';
+
+function switchTab(t) {
+  tab = t;
+  ['in','up'].forEach(k => document.getElementById('tab-'+k).classList.toggle('active', k===t));
+  document.getElementById('f-name').style.display = t==='up'?'block':'none';
+  document.getElementById('f-conf').style.display = t==='up'?'block':'none';
+  document.getElementById('strength-wrap').style.display = t==='up'?'block':'none';
+  document.getElementById('sub-btn').textContent = t==='in'?'Sign In':'Create Account';
+  document.getElementById('i-pass').autocomplete = t==='in'?'current-password':'new-password';
+  document.getElementById('foot').innerHTML = t==='in'
+    ? 'Don\'t have an account? <a href="#" onclick="switchTab(\'up\');return false">Create one free</a>'
+    : 'Already have an account? <a href="#" onclick="switchTab(\'in\');return false">Sign in</a>';
+  clearAll();
+}
+
+function msg(text, type) {
+  const el = document.getElementById('gmsg');
+  el.textContent = text;
+  el.className = 'global-msg show ' + (type||'err');
+}
+function clearMsg() { document.getElementById('gmsg').className = 'global-msg'; }
+
+function err(id, text) {
+  const e = document.getElementById('e-'+id), i = document.getElementById('i-'+id);
+  if (!e || !i) return;
+  e.textContent = text; e.className = 'err-txt' + (text?' show':'');
+  i.classList.toggle('invalid', !!text);
+}
+function clearAll() { ['name','email','pass','conf'].forEach(k=>err(k,'')); clearMsg(); }
+
+function checkStrength() {
+  if (tab !== 'up') return;
+  const p = document.getElementById('i-pass').value;
+  const bar = document.getElementById('strength-bar');
+  const wrap = document.getElementById('strength-wrap');
+  wrap.style.display = 'block';
+  let score = 0;
+  if (p.length >= 8) score++;
+  if (/[A-Z]/.test(p)) score++;
+  if (/[0-9]/.test(p)) score++;
+  if (/[^A-Za-z0-9]/.test(p)) score++;
+  const pct = ['0%','30%','55%','75%','100%'][score];
+  const col = ['#F44336','#FF9800','#FFC107','#8BC34A','#4CAF50'][score];
+  bar.style.width = pct; bar.style.background = col;
+}
+
+async function handleSubmit(e) {
+  e.preventDefault();
+  clearAll();
+  const email = document.getElementById('i-email').value.trim();
+  const pass  = document.getElementById('i-pass').value;
+  let ok = true;
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { err('email','Enter a valid email address.'); ok=false; }
+  if (!pass || pass.length < 6) { err('pass','Password must be at least 6 characters.'); ok=false; }
+
+  if (tab === 'up') {
+    const name = document.getElementById('i-name').value.trim();
+    const conf = document.getElementById('i-conf').value;
+    if (!name || name.length < 2) { err('name','Please enter your full name.'); ok=false; }
+    if (pass !== conf) { err('conf','Passwords do not match.'); ok=false; }
+    if (!ok) return;
+
+    const btn = document.getElementById('sub-btn');
+    btn.disabled = true; btn.textContent = 'Creating account…';
+    try {
+      await Auth.signUp(name, email, pass);
+      msg('Account created! Redirecting you…','ok');
+      setTimeout(() => { const r=new URLSearchParams(location.search).get('r'); location.href=r||'index.html'; }, 1100);
+    } catch(ex) {
+      msg(ex.message); btn.disabled=false; btn.textContent='Create Account';
+    }
+  } else {
+    if (!ok) return;
+    const btn = document.getElementById('sub-btn');
+    btn.disabled=true; btn.textContent='Signing in…';
+    try {
+      await Auth.signIn(email, pass);
+      const r = new URLSearchParams(location.search).get('r');
+      location.href = r || 'index.html';
+    } catch(ex) {
+      msg(ex.message); btn.disabled=false; btn.textContent='Sign In';
+    }
+  }
+}
+</script>
+</body>
+</html>

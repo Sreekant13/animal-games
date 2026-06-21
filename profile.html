@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile — Animal Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#071207;min-height:100vh;font-family:'Segoe UI',Arial,sans-serif;color:#e8f5e9}
+.bg{position:fixed;inset:0;background:radial-gradient(ellipse at 20% 80%,rgba(46,125,50,.15) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(46,125,50,.1) 0%,transparent 50%);pointer-events:none;z-index:0}
+nav{position:sticky;top:0;z-index:10;background:#0a1a0aee;backdrop-filter:blur(10px);border-bottom:1px solid #1B5E20;padding:12px 32px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{color:#7CFC00;font-weight:900;font-size:16px;letter-spacing:2px;text-decoration:none}
+.nav-right{display:flex;gap:10px;align-items:center}
+.nav-btn{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:bold;cursor:pointer;text-decoration:none;border:none;transition:all .2s}
+.btn-outline{background:transparent;border:1px solid #2E7D32;color:#81C784}.btn-outline:hover{background:#2E7D32;color:white}
+.btn-solid{background:#2E7D32;color:white}.btn-solid:hover{filter:brightness(1.15)}
+main{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:40px 24px}
+
+/* Hero card */
+.hero{background:linear-gradient(135deg,#0d1f0d,#122112);border:1px solid #2E7D32;border-radius:16px;padding:36px;display:flex;gap:28px;align-items:center;margin-bottom:28px;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.avatar{width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:white;flex-shrink:0;border:3px solid #4CAF50;box-shadow:0 0 24px rgba(76,175,80,.3)}
+.hero-info h1{font-size:24px;color:#e8f5e9;margin-bottom:4px}
+.hero-info .email{color:#558B2F;font-size:13px;margin-bottom:12px}
+.hero-info .meta{display:flex;gap:16px;flex-wrap:wrap}
+.meta-chip{background:#0a1a0a;border:1px solid #1B5E20;border-radius:20px;padding:4px 12px;font-size:11px;color:#81C784}
+.logout-btn{margin-left:auto;padding:9px 20px;background:rgba(183,28,28,.15);border:1px solid rgba(229,57,53,.4);border-radius:8px;color:#EF9A9A;font-size:13px;font-weight:bold;cursor:pointer;transition:all .2s;flex-shrink:0}
+.logout-btn:hover{background:rgba(183,28,28,.3)}
+
+/* Grid */
+.section-title{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#558B2F;margin-bottom:14px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{background:#0d1f0d;border:1px solid #2E7D32;border-radius:12px;padding:20px}
+.stat-card .game-name{font-size:13px;color:#A5D6A7;font-weight:bold;margin-bottom:4px}
+.stat-card .game-tag{font-size:10px;color:#558B2F;margin-bottom:16px}
+.score-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.score-label{font-size:11px;color:#558B2F}
+.score-val{font-size:20px;font-weight:900;color:#7CFC00}
+.score-sub{font-size:10px;color:#2E7D32;margin-top:2px}
+.play-link{display:block;margin-top:14px;padding:8px;background:#071207;border:1px solid #2E7D32;border-radius:7px;color:#81C784;text-align:center;text-decoration:none;font-size:12px;font-weight:bold;transition:all .2s}
+.play-link:hover{background:#2E7D32;color:white}
+
+/* Achievement badges */
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px}
+.badge{background:#0d1f0d;border:1px solid #1B5E20;border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:8px;font-size:12px;color:#81C784;transition:border-color .2s}
+.badge.earned{border-color:#4CAF50;color:#A5D6A7}
+.badge.locked{opacity:.4;filter:grayscale(1)}
+.badge .bico{font-size:20px}
+.badge .binfo .bname{font-weight:bold;font-size:12px}
+.badge .binfo .bdesc{font-size:10px;color:#558B2F;margin-top:1px}
+
+/* Account settings */
+.settings-card{background:#0d1f0d;border:1px solid #2E7D32;border-radius:12px;padding:20px;margin-bottom:28px}
+.settings-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #071207}
+.settings-row:last-child{border-bottom:none}
+.settings-row .skey{font-size:12px;color:#558B2F}
+.settings-row .sval{font-size:13px;color:#A5D6A7}
+.danger-zone{background:rgba(183,28,28,.08);border:1px solid rgba(229,57,53,.25);border-radius:12px;padding:20px}
+.danger-zone h3{color:#EF9A9A;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.danger-btn{padding:8px 18px;background:transparent;border:1px solid rgba(229,57,53,.4);border-radius:7px;color:#EF9A9A;font-size:12px;cursor:pointer;transition:all .2s}
+.danger-btn:hover{background:rgba(229,57,53,.15)}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<nav>
+  <a class="nav-logo" href="index.html">🐼 ANIMAL GAMES</a>
+  <div class="nav-right">
+    <a class="nav-btn btn-outline" href="index.html">← Games</a>
+    <button class="nav-btn btn-solid" onclick="Auth.signOut()">Sign Out</button>
+  </div>
+</nav>
+
+<main>
+  <div class="hero" id="hero">
+    <div class="avatar" id="avatar"></div>
+    <div class="hero-info">
+      <h1 id="uname">—</h1>
+      <div class="email" id="uemail">—</div>
+      <div class="meta">
+        <span class="meta-chip" id="ujoin">—</span>
+        <span class="meta-chip" id="ugames">—</span>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="Auth.signOut()">Sign Out</button>
+  </div>
+
+  <div class="section-title">Game Stats</div>
+  <div class="grid">
+    <div class="stat-card">
+      <div class="game-name">🏙️ Bamboo Crisis</div>
+      <div class="game-tag">Real-Time Strategy</div>
+      <div class="score-row">
+        <div>
+          <div class="score-label">Best Score</div>
+          <div class="score-val" id="sc-crisis">—</div>
+          <div class="score-sub" id="sc-crisis-sub">No games played yet</div>
+        </div>
+      </div>
+      <a class="play-link" href="bamboo-crisis.html">▶ Play Now</a>
+    </div>
+    <div class="stat-card">
+      <div class="game-name">🎋 Bamboo Feast</div>
+      <div class="game-tag">Arcade</div>
+      <div class="score-row">
+        <div>
+          <div class="score-label">Best Score</div>
+          <div class="score-val" id="sc-feast">—</div>
+          <div class="score-sub" id="sc-feast-sub">No games played yet</div>
+        </div>
+      </div>
+      <a class="play-link" href="panda-bamboo-game.html">▶ Play Now</a>
+    </div>
+  </div>
+
+  <div class="section-title">Achievements</div>
+  <div class="badges" id="badges"></div>
+
+  <div class="section-title">Account</div>
+  <div class="settings-card" id="acct-card">
+    <div class="settings-row"><span class="skey">Name</span><span class="sval" id="a-name">—</span></div>
+    <div class="settings-row"><span class="skey">Email</span><span class="sval" id="a-email">—</span></div>
+    <div class="settings-row"><span class="skey">Member since</span><span class="sval" id="a-join">—</span></div>
+    <div class="settings-row"><span class="skey">Account type</span><span class="sval">Free</span></div>
+  </div>
+
+  <div class="danger-zone">
+    <h3>Danger Zone</h3>
+    <button class="danger-btn" onclick="clearData()">Clear All Game Data</button>
+  </div>
+</main>
+
+<script src="auth.js"></script>
+<script>
+Auth.init();
+const user = Auth.getUser();
+if (!user) { location.href = 'login.html?r=profile.html'; }
+
+const ACHIEVEMENTS = [
+  { id:'first',  ico:'🌱', name:'First Steps',    desc:'Play your first game',          check: u => Object.keys(u.scores||{}).length > 0 },
+  { id:'score',  ico:'🏆', name:'High Scorer',    desc:'Score 100+ in Bamboo Feast',    check: u => (u.scores?.['bamboo-feast']||0) >= 100 },
+  { id:'save',   ico:'💾', name:'Preserver',      desc:'Save a game in Bamboo Crisis',  check: u => !!localStorage.getItem('bamboo-crisis-v2') },
+  { id:'panda',  ico:'🐼', name:'Panda Guardian', desc:'Score 200+ in Bamboo Feast',    check: u => (u.scores?.['bamboo-feast']||0) >= 200 },
+  { id:'member', ico:'⭐', name:'Early Adopter',  desc:'Join the Animal Games community',check: u => !!u.id },
+];
+
+function fmt(ts) {
+  return new Date(ts).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+}
+
+function render() {
+  if (!user) return;
+
+  // Avatar
+  const av = document.getElementById('avatar');
+  av.style.background = user.color || '#2E7D32';
+  av.textContent = user.initials || user.name?.slice(0,2).toUpperCase() || '?';
+
+  // Hero
+  document.getElementById('uname').textContent = user.name;
+  document.getElementById('uemail').textContent = user.email;
+  document.getElementById('ujoin').textContent = '📅 Joined ' + fmt(user.joinedAt);
+  const gamesPlayed = Object.values(user.scores||{}).filter(s=>s>0).length;
+  document.getElementById('ugames').textContent = `🎮 ${gamesPlayed} game${gamesPlayed!==1?'s':''} played`;
+
+  // Scores
+  const crisis = user.scores?.['bamboo-crisis'] || 0;
+  const feast  = user.scores?.['bamboo-feast']  || 0;
+  document.getElementById('sc-crisis').textContent = crisis > 0 ? crisis : '—';
+  document.getElementById('sc-crisis-sub').textContent = crisis > 0 ? 'Personal best' : 'No games played yet';
+  document.getElementById('sc-feast').textContent = feast > 0 ? feast : '—';
+  document.getElementById('sc-feast-sub').textContent = feast > 0 ? 'Personal best' : 'No games played yet';
+
+  // Account
+  document.getElementById('a-name').textContent  = user.name;
+  document.getElementById('a-email').textContent = user.email;
+  document.getElementById('a-join').textContent  = fmt(user.joinedAt);
+
+  // Achievements
+  const wrap = document.getElementById('badges');
+  wrap.innerHTML = '';
+  ACHIEVEMENTS.forEach(a => {
+    const earned = a.check(user);
+    wrap.innerHTML += `
+      <div class="badge ${earned?'earned':'locked'}">
+        <span class="bico">${a.ico}</span>
+        <div class="binfo">
+          <div class="bname">${a.name}</div>
+          <div class="bdesc">${a.desc}</div>
+        </div>
+      </div>`;
+  });
+}
+
+function clearData() {
+  if (!confirm('This will reset all your game scores and save data. Are you sure?')) return;
+  const users = JSON.parse(localStorage.getItem('ag_users')||'{}');
+  if (users[user.email]) { users[user.email].scores = {}; localStorage.setItem('ag_users', JSON.stringify(users)); }
+  localStorage.removeItem('bamboo-crisis-v2');
+  user.scores = {};
+  localStorage.setItem('ag_session', JSON.stringify(user));
+  render();
+  alert('Game data cleared.');
+}
+
+render();
+</script>
+</body>
+</html>
