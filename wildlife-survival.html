@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wild Survival — Animal Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#05090a;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;color:#e8e8e8;user-select:none}
+canvas{position:fixed;top:0;left:0}
+
+/* ── HUD ── */
+#hud{position:fixed;top:0;left:0;right:0;z-index:20;pointer-events:none;display:none}
+.hud-inner{padding:10px 16px;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);
+  border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:12px}
+.animal-badge{font-size:22px;line-height:1}
+.hud-bars{display:flex;flex-direction:column;gap:5px;min-width:160px}
+.bar-row{display:flex;align-items:center;gap:6px}
+.bar-ico{font-size:12px;width:16px;text-align:center}
+.bar-bg{width:120px;height:7px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .2s,background .4s}
+.bar-num{font-size:9px;color:rgba(255,255,255,0.4);min-width:22px;text-align:right}
+.hud-day{margin-left:auto;text-align:right;pointer-events:none}
+.day-num{font-size:18px;font-weight:900;color:#fff;letter-spacing:1px;line-height:1}
+.day-phase{font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:1.5px}
+
+/* ── Minimap ── */
+#minimap{position:fixed;top:10px;right:12px;z-index:20;display:none;
+  border:1px solid rgba(255,255,255,0.15);border-radius:6px;overflow:hidden;
+  box-shadow:0 4px 16px rgba(0,0,0,0.6)}
+
+/* ── Event log ── */
+#elog{position:fixed;bottom:72px;left:14px;z-index:20;pointer-events:none;display:none}
+.emsg{font-size:11px;padding:2px 8px;border-radius:3px;background:rgba(0,0,0,0.5);
+  color:#ccc;margin-top:3px;max-width:280px;line-height:1.4}
+
+/* ── Controls hint ── */
+#ctrl-hint{position:fixed;bottom:12px;right:14px;z-index:20;text-align:right;
+  font-size:10px;color:rgba(255,255,255,0.25);line-height:2;pointer-events:none;display:none}
+
+/* ── Select Screen ── */
+#sel{position:fixed;inset:0;z-index:50;overflow-y:auto;
+  background:radial-gradient(ellipse at 35% 65%,#0b2210,#050a05 70%)}
+.sel-inner{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px}
+.sel-back{position:fixed;top:16px;left:16px;color:#4CAF50;text-decoration:none;font-size:12px;
+  background:rgba(0,0,0,0.5);padding:6px 12px;border-radius:6px;z-index:51}
+.sel-back:hover{color:#7CFC00}
+.sel-title{font-size:clamp(26px,5vw,52px);font-weight:900;letter-spacing:5px;
+  color:#7CFC00;text-shadow:0 0 40px rgba(124,252,0,.25);margin-bottom:6px}
+.sel-sub{color:#558B2F;font-size:13px;letter-spacing:.5px;margin-bottom:40px}
+.sel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));
+  gap:14px;max-width:880px;width:100%}
+.scard{background:rgba(10,24,10,0.92);border:1px solid #2E7D32;border-radius:14px;
+  padding:22px 16px 18px;cursor:pointer;transition:all .18s;text-align:center}
+.scard:hover{border-color:#7CFC00;transform:translateY(-5px);box-shadow:0 14px 36px rgba(124,252,0,.13)}
+.scard-ico{font-size:50px;display:block;margin-bottom:10px}
+.scard-name{font-size:16px;font-weight:900;color:#e8f5e9;margin-bottom:2px}
+.scard-role{font-size:9px;letter-spacing:2px;color:#558B2F;text-transform:uppercase;margin-bottom:6px}
+.scard-diff{font-size:10px;margin-bottom:10px}
+.scard-desc{font-size:11px;color:#81C784;line-height:1.6;margin-bottom:12px;min-height:54px}
+.scard-tags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.stag{font-size:9px;background:#071207;border:1px solid #1B5E20;padding:2px 8px;
+  border-radius:8px;color:#A5D6A7;letter-spacing:.3px}
+
+/* ── Death Screen ── */
+#dead{position:fixed;inset:0;z-index:50;display:none;background:rgba(0,0,0,0.88);
+  flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.dead-title{font-size:52px;font-weight:900;color:#f44336;margin-bottom:10px;
+  text-shadow:0 0 30px rgba(244,67,54,.4)}
+.dead-sub{font-size:14px;color:rgba(255,255,255,0.5);margin-bottom:20px}
+.dead-stats{font-size:13px;line-height:2.2;color:#aaa;margin-bottom:28px}
+.dead-stats b{color:#fff}
+.dbtn{padding:11px 28px;border:none;border-radius:8px;font-size:14px;font-weight:bold;
+  cursor:pointer;transition:all .2s;margin:0 6px}
+.dbtn-green{background:#2E7D32;color:#fff}.dbtn-green:hover{background:#4CAF50}
+.dbtn-blue{background:#1565C0;color:#fff}.dbtn-blue:hover{background:#1976D2}
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<!-- In-game HUD -->
+<div id="hud">
+  <div class="hud-inner">
+    <div class="animal-badge" id="hud-ico">🐰</div>
+    <div class="hud-bars">
+      <div class="bar-row">
+        <span class="bar-ico">❤️</span>
+        <div class="bar-bg"><div class="bar-fill" id="b-hp" style="background:#e53935;width:100%"></div></div>
+        <span class="bar-num" id="n-hp">100</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-ico">🍖</span>
+        <div class="bar-bg"><div class="bar-fill" id="b-hunger" style="background:#fb8c00;width:100%"></div></div>
+        <span class="bar-num" id="n-hunger">100</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-ico">💧</span>
+        <div class="bar-bg"><div class="bar-fill" id="b-thirst" style="background:#1e88e5;width:100%"></div></div>
+        <span class="bar-num" id="n-thirst">100</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-ico">⚡</span>
+        <div class="bar-bg"><div class="bar-fill" id="b-stamina" style="background:#fdd835;width:100%"></div></div>
+        <span class="bar-num" id="n-stamina">100</span>
+      </div>
+    </div>
+    <div class="hud-day">
+      <div class="day-num" id="hud-day">DAY 1</div>
+      <div class="day-phase" id="hud-phase">MORNING</div>
+    </div>
+  </div>
+</div>
+
+<canvas id="minimap" width="130" height="90"></canvas>
+<div id="elog"></div>
+<div id="ctrl-hint">WASD / Arrow Keys — Move<br>SHIFT — Sprint<br>E — Eat / Drink<br>SPACE — Attack (predators)<br>ESC — Menu</div>
+
+<!-- Species Select -->
+<div id="sel">
+  <a class="sel-back" href="index.html">← Animal Games</a>
+  <div class="sel-inner">
+    <div class="sel-title">WILD SURVIVAL</div>
+    <div class="sel-sub">Choose your animal. Find food and water. Survive the wilderness.</div>
+    <div class="sel-grid">
+
+      <div class="scard" onclick="startGame('rabbit')">
+        <span class="scard-ico">🐰</span>
+        <div class="scard-name">Rabbit</div>
+        <div class="scard-role">Prey Animal</div>
+        <div class="scard-diff" style="color:#7CFC00">★☆☆☆ Easiest</div>
+        <div class="scard-desc">Fast and small. Hide in tall grass to escape wolves and foxes. Graze anywhere — but always stay near cover.</div>
+        <div class="scard-tags"><span class="stag">⚡ Fast</span><span class="stag">🫥 Stealth</span><span class="stag">🥬 Herbivore</span></div>
+      </div>
+
+      <div class="scard" onclick="startGame('deer')">
+        <span class="scard-ico">🦌</span>
+        <div class="scard-name">Deer</div>
+        <div class="scard-role">Prey Animal</div>
+        <div class="scard-diff" style="color:#FFC107">★★☆☆ Medium</div>
+        <div class="scard-desc">Large and powerful. Graze in meadows and drink from rivers. Wolf packs hunt at night — keep moving.</div>
+        <div class="scard-tags"><span class="stag">🏃 Sprint</span><span class="stag">👂 Alert</span><span class="stag">🌿 Grazer</span></div>
+      </div>
+
+      <div class="scard" onclick="startGame('fox')">
+        <span class="scard-ico">🦊</span>
+        <div class="scard-name">Fox</div>
+        <div class="scard-role">Mid Predator</div>
+        <div class="scard-diff" style="color:#FF9800">★★★☆ Hard</div>
+        <div class="scard-desc">Cunning hunter. Chase down rabbits to survive. Avoid wolves and bears — you're not at the top here.</div>
+        <div class="scard-tags"><span class="stag">🎯 Pounce</span><span class="stag">🦊 Agile</span><span class="stag">🥩 Carnivore</span></div>
+      </div>
+
+      <div class="scard" onclick="startGame('wolf')">
+        <span class="scard-ico">🐺</span>
+        <div class="scard-name">Wolf</div>
+        <div class="scard-role">Apex Predator</div>
+        <div class="scard-diff" style="color:#FF5722">★★★★ Hardest</div>
+        <div class="scard-desc">Top of the food chain. Hunt deer and rabbits. Only bears can challenge you, but hunger strikes fast.</div>
+        <div class="scard-tags"><span class="stag">💪 Power</span><span class="stag">🐺 Hunter</span><span class="stag">🥩 Apex</span></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Death Screen -->
+<div id="dead">
+  <div class="dead-title">YOU DIED</div>
+  <div class="dead-sub" id="dead-cause">You starved.</div>
+  <div class="dead-stats" id="dead-stats"></div>
+  <div>
+    <button class="dbtn dbtn-green" onclick="showSelect()">Choose Animal</button>
+    <button class="dbtn dbtn-blue" id="play-again-btn" onclick="replayGame()">Play Again</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  CONSTANTS & SPECS
+// ════════════════════════════════════════════════════════════
+const TILE = 32;
+const WW = 120, WH = 80;
+const PX_W = WW * TILE, PX_H = WH * TILE;
+
+const T = { DEEP:0, WATER:1, SAND:2, GRASS:3, TALL:4, FOREST:5, ROCK:6, MUD:7 };
+const TILE_COLOR = ['#0d3a5c','#1e7cb8','#c9b07a','#52883d','#2e6020','#1a4214','#7a7a7a','#7a5535'];
+const WALKABLE   = [false, false, true, true, true, true, false, true];
+const TILE_SLOW  = [1, 1, 1, 1, 0.72, 0.60, 1, 0.55];
+
+const ICO = { rabbit:'🐰', deer:'🦌', fox:'🦊', wolf:'🐺', bear:'🐻' };
+
+const SPECS = {
+  rabbit:{ spd:3.6, sprint:1.8, sz:9,  col:'#d0bfa0', hungerR:0.004, thirstR:0.006,
+           threats:['wolf','fox','bear'], prey:[], eats:[T.GRASS,T.TALL] },
+  deer:  { spd:3.0, sprint:2.0, sz:13, col:'#8b6340', hungerR:0.003, thirstR:0.005,
+           threats:['wolf','bear'],      prey:[], eats:[T.GRASS,T.TALL,T.FOREST] },
+  fox:   { spd:3.3, sprint:1.7, sz:10, col:'#c05010', hungerR:0.005, thirstR:0.006,
+           threats:['wolf','bear'],      prey:['rabbit'], eats:[] },
+  wolf:  { spd:2.9, sprint:1.6, sz:14, col:'#505060', hungerR:0.006, thirstR:0.005,
+           threats:['bear'],             prey:['rabbit','deer','fox'], eats:[] },
+  bear:  { spd:1.9, sprint:1.4, sz:18, col:'#5a3520', hungerR:0.004, thirstR:0.004,
+           threats:[],                   prey:['deer','fox','rabbit'], eats:[T.FOREST] },
+};
+
+// ════════════════════════════════════════════════════════════
+//  CANVAS
+// ════════════════════════════════════════════════════════════
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const mc  = document.getElementById('minimap');
+const mctx = mc.getContext('2d');
+let VW, VH;
+
+function resize() {
+  VW = cv.width  = window.innerWidth;
+  VH = cv.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ════════════════════════════════════════════════════════════
+//  NOISE & WORLD GEN
+// ════════════════════════════════════════════════════════════
+function hash(x, y, s=0) {
+  let h = ((x*374761393)^(y*668265263)^(s*123456791))>>>0;
+  h = ((h^(h>>13))*1274126177)>>>0;
+  return (h&0xffffff)/0xffffff;
+}
+function smoothN(x, y, s=0) {
+  const xi=x|0, yi=y|0, xf=x-xi, yf=y-yi;
+  const sx=xf*xf*(3-2*xf), sy=yf*yf*(3-2*yf);
+  const a=hash(xi,yi,s), b=hash(xi+1,yi,s), c=hash(xi,yi+1,s), d=hash(xi+1,yi+1,s);
+  return a+(b-a)*sx+(c-a)*sy+(a-b-c+d)*sx*sy;
+}
+function noise(x, y, oct=4, per=0.5, s=0) {
+  let v=0, a=1, f=1, m=0;
+  for(let i=0;i<oct;i++){v+=smoothN(x*f,y*f,s+i*997)*a;m+=a;a*=per;f*=2;}
+  return v/m;
+}
+
+let worldMap, berries, mmCache;
+
+function genWorld(seed) {
+  seed = seed || (Math.random()*99999|0);
+  worldMap = new Uint8Array(WW*WH);
+  berries = [];
+
+  for(let y=0;y<WH;y++) for(let x=0;x<WW;x++) {
+    const e = noise(x/32,y/32,4,0.5,seed);
+    const m = noise(x/22,y/22,3,0.5,seed+500);
+    let t;
+    if(e<0.28)       t=T.DEEP;
+    else if(e<0.36)  t=T.WATER;
+    else if(e<0.41)  t=T.SAND;
+    else if(e<0.72)  t=m>0.6?T.TALL:T.GRASS;
+    else if(e<0.87)  t=T.FOREST;
+    else             t=T.ROCK;
+    if(t===T.SAND && Math.random()<0.2) t=T.MUD;
+    if(t===T.GRASS && m>0.73 && Math.random()<0.3) t=T.FOREST;
+    worldMap[y*WW+x]=t;
+    if((t===T.TALL||t===T.FOREST) && Math.random()<0.015)
+      berries.push({x,y,amt:4+Math.random()*3|0,max:6});
+  }
+
+  // Force enough water access
+  let waterCount=0;
+  for(let i=0;i<worldMap.length;i++) if(worldMap[i]===T.WATER) waterCount++;
+  if(waterCount<50) {
+    for(let i=0;i<8;i++){
+      const rx=10+Math.random()*(WW-20)|0, ry=10+Math.random()*(WH-20)|0;
+      for(let dy=-2;dy<=2;dy++) for(let dx=-2;dx<=2;dx++) {
+        const idx=(ry+dy)*WW+(rx+dx);
+        if(idx>=0&&idx<worldMap.length) worldMap[idx]=T.WATER;
+      }
+    }
+  }
+
+  buildMM();
+}
+
+function tileAt(tx,ty) {
+  if(tx<0||tx>=WW||ty<0||ty>=WH) return T.ROCK;
+  return worldMap[ty*WW+tx];
+}
+function walkable(tx,ty){ return WALKABLE[tileAt(tx,ty)]||false; }
+
+// Minimap pre-render
+function buildMM() {
+  const oc=document.createElement('canvas'); oc.width=WW; oc.height=WH;
+  const octx=oc.getContext('2d');
+  for(let y=0;y<WH;y++) for(let x=0;x<WW;x++){
+    octx.fillStyle=TILE_COLOR[worldMap[y*WW+x]]; octx.fillRect(x,y,1,1);
+  }
+  for(const b of berries){ octx.fillStyle='#aa2222'; octx.fillRect(b.x,b.y,1,1); }
+  mmCache=oc;
+}
+
+// ════════════════════════════════════════════════════════════
+//  ANIMAL SPRITES
+// ════════════════════════════════════════════════════════════
+function sprite(type, x, y, angle, sz, isPlayer, alertLvl) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle + Math.PI/2);
+  const col = isPlayer ? '#ffffff' : SPECS[type].col;
+  ctx.strokeStyle = isPlayer ? '#00ff88' : 'rgba(0,0,0,0.35)';
+  ctx.lineWidth = isPlayer ? 1.8 : 0.9;
+  if(type==='rabbit') drawRabbit(sz,col,isPlayer);
+  else if(type==='deer') drawDeer(sz,col,isPlayer);
+  else if(type==='fox')  drawFox(sz,col,isPlayer);
+  else if(type==='wolf') drawWolf(sz,col,isPlayer);
+  else drawBear(sz,col,isPlayer);
+  ctx.restore();
+
+  // Alert glow for hunting NPCs
+  if(alertLvl>0) {
+    ctx.save();
+    ctx.globalAlpha=alertLvl*0.4;
+    ctx.shadowBlur=16; ctx.shadowColor='#ff3300';
+    ctx.strokeStyle='#ff4400'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(x,y,sz+4,0,Math.PI*2); ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawRabbit(s,col,pl) {
+  ctx.fillStyle=col;
+  // Body
+  ctx.beginPath(); ctx.ellipse(0,s*0.15,s*0.52,s*0.78,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  // Head
+  ctx.beginPath(); ctx.arc(0,-s*0.6,s*0.4,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  // Ears
+  ctx.beginPath(); ctx.ellipse(-s*0.19,-s*1.2,s*0.12,s*0.4,-0.15,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(s*0.19,-s*1.2,s*0.12,s*0.4,0.15,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  // Inner ear pink
+  ctx.fillStyle=pl?'rgba(200,100,100,0.5)':'rgba(180,100,100,0.6)'; ctx.strokeStyle='none'; ctx.lineWidth=0;
+  ctx.beginPath(); ctx.ellipse(-s*0.19,-s*1.2,s*0.055,s*0.24,-0.15,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(s*0.19,-s*1.2,s*0.055,s*0.24,0.15,0,Math.PI*2); ctx.fill();
+  // Eye
+  ctx.lineWidth=0; ctx.fillStyle='#111';
+  ctx.beginPath(); ctx.arc(-s*0.17,-s*0.65,s*0.1,0,Math.PI*2); ctx.fill();
+  if(pl){ctx.fillStyle='rgba(255,255,255,0.7)';ctx.beginPath();ctx.arc(-s*0.13,-s*0.68,s*0.04,0,Math.PI*2);ctx.fill();}
+  // Tail
+  ctx.fillStyle=pl?'rgba(255,255,255,0.8)':'rgba(255,255,255,0.6)';
+  ctx.beginPath(); ctx.arc(0,s*0.85,s*0.19,0,Math.PI*2); ctx.fill();
+}
+
+function drawWolf(s,col,pl) {
+  ctx.fillStyle=col;
+  // Body
+  ctx.beginPath(); ctx.ellipse(0,s*0.12,s*0.56,s*0.82,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  // Neck + head
+  ctx.beginPath(); ctx.ellipse(0,-s*0.58,s*0.36,s*0.46,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  // Snout
+  ctx.fillStyle=pl?'#ddd':'#888';
+  ctx.beginPath(); ctx.ellipse(0,-s*0.52,s*0.24,s*0.2,0,0,Math.PI*2); ctx.fill();
+  // Ears (triangles)
+  ctx.fillStyle=col;
+  ctx.beginPath(); ctx.moveTo(-s*0.25,-s*0.9); ctx.lineTo(-s*0.46,-s*1.22); ctx.lineTo(-s*0.08,-s*1.02); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(s*0.25,-s*0.9); ctx.lineTo(s*0.46,-s*1.22); ctx.lineTo(s*0.08,-s*1.02); ctx.closePath(); ctx.fill(); ctx.stroke();
+  // Inner ear
+  ctx.fillStyle='rgba(180,100,80,0.5)';
+  ctx.beginPath(); ctx.moveTo(-s*0.24,-s*0.92); ctx.lineTo(-s*0.4,-s*1.15); ctx.lineTo(-s*0.1,-s*1.01); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(s*0.24,-s*0.92); ctx.lineTo(s*0.4,-s*1.15); ctx.lineTo(s*0.1,-s*1.01); ctx.closePath(); ctx.fill();
+  // Eyes
+  ctx.fillStyle=pl?'#aaff44':'#ccdd00';
+  ctx.beginPath(); ctx.arc(-s*0.18,-s*0.66,s*0.09,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(s*0.18,-s*0.66,s*0.09,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#000';
+  ctx.beginPath(); ctx.arc(-s*0.18,-s*0.66,s*0.055,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(s*0.18,-s*0.66,s*0.055,0,Math.PI*2); ctx.fill();
+  // Tail
+  ctx.strokeStyle=col; ctx.lineWidth=s*0.22; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(0,s*0.8); ctx.quadraticCurveTo(s*0.6,s*1.2,s*0.35,s*1.55); ctx.stroke();
+  ctx.lineWidth=0.9; ctx.lineCap='butt';
+}
+
+function drawFox(s,col,pl) {
+  ctx.fillStyle=col;
+  ctx.beginPath(); ctx.ellipse(0,s*0.1,s*0.49,s*0.74,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(0,-s*0.62,s*0.38,s*0.34,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  // White muzzle
+  ctx.fillStyle=pl?'#fff':'#f0e8d8';
+  ctx.beginPath(); ctx.ellipse(0,-s*0.54,s*0.22,s*0.17,0,0,Math.PI*2); ctx.fill();
+  // Sharp ears
+  ctx.fillStyle=col;
+  ctx.beginPath(); ctx.moveTo(-s*0.24,-s*0.86); ctx.lineTo(-s*0.46,-s*1.24); ctx.lineTo(-s*0.05,-s*0.98); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(s*0.24,-s*0.86); ctx.lineTo(s*0.46,-s*1.24); ctx.lineTo(s*0.05,-s*0.98); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#aa2200';
+  ctx.beginPath(); ctx.moveTo(-s*0.23,-s*0.88); ctx.lineTo(-s*0.39,-s*1.16); ctx.lineTo(-s*0.07,-s*0.99); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(s*0.23,-s*0.88); ctx.lineTo(s*0.39,-s*1.16); ctx.lineTo(s*0.07,-s*0.99); ctx.closePath(); ctx.fill();
+  // Eyes
+  ctx.fillStyle=pl?'#55ff55':'#55cc55';
+  ctx.beginPath(); ctx.arc(-s*0.16,-s*0.68,s*0.09,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(s*0.16,-s*0.68,s*0.09,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#000';
+  ctx.beginPath(); ctx.arc(-s*0.16,-s*0.68,s*0.05,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(s*0.16,-s*0.68,s*0.05,0,Math.PI*2); ctx.fill();
+  // Bushy tail
+  ctx.fillStyle=col;
+  ctx.beginPath(); ctx.ellipse(s*0.1,s*0.98,s*0.2,s*0.4,0.35,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#fff';
+  ctx.beginPath(); ctx.arc(s*0.16,s*1.25,s*0.13,0,Math.PI*2); ctx.fill();
+}
+
+function drawDeer(s,col,pl) {
+  ctx.fillStyle=col;
+  ctx.beginPath(); ctx.ellipse(0,s*0.12,s*0.57,s*0.85,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  // Legs
+  for(const[lx,ly]of[[-s*0.3,s*0.68],[s*0.3,s*0.68],[-s*0.24,s*0.52],[s*0.24,s*0.52]]) {
+    ctx.beginPath(); ctx.ellipse(lx,ly,s*0.09,s*0.2,0,0,Math.PI*2); ctx.fill();
+  }
+  // Neck
+  ctx.beginPath(); ctx.ellipse(0,-s*0.65,s*0.2,s*0.3,0,0,Math.PI*2); ctx.fill();
+  // Head
+  ctx.beginPath(); ctx.ellipse(0,-s*0.95,s*0.27,s*0.25,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  // Antlers
+  ctx.strokeStyle=pl?'#ccaa66':'#7a5a28'; ctx.lineWidth=2; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(-s*0.1,-s*1.1); ctx.lineTo(-s*0.28,-s*1.48); ctx.lineTo(-s*0.48,-s*1.38); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-s*0.28,-s*1.48); ctx.lineTo(-s*0.22,-s*1.62); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(s*0.1,-s*1.1); ctx.lineTo(s*0.28,-s*1.48); ctx.lineTo(s*0.48,-s*1.38); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(s*0.28,-s*1.48); ctx.lineTo(s*0.22,-s*1.62); ctx.stroke();
+  ctx.lineCap='butt'; ctx.lineWidth=0.9;
+  // Eye
+  ctx.fillStyle='#111';
+  ctx.beginPath(); ctx.arc(-s*0.14,-s*0.97,s*0.07,0,Math.PI*2); ctx.fill();
+  // White spots (young deer look)
+  ctx.fillStyle='rgba(255,255,255,0.22)';
+  for(const[ox,oy]of[[0.05,0.2],[-0.22,0.05],[0.28,0.3],[-0.08,-0.1]])
+    { ctx.beginPath(); ctx.arc(ox*s,oy*s,s*0.1,0,Math.PI*2); ctx.fill(); }
+}
+
+function drawBear(s,col,pl) {
+  ctx.fillStyle=col;
+  ctx.beginPath(); ctx.ellipse(0,s*0.1,s*0.68,s*0.92,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(0,-s*0.8,s*0.48,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  // Ears (round)
+  ctx.beginPath(); ctx.arc(-s*0.36,-s*1.08,s*0.18,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(s*0.36,-s*1.08,s*0.18,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  // Snout
+  ctx.fillStyle=pl?'#8a6040':'#7a5030';
+  ctx.beginPath(); ctx.ellipse(0,-s*0.68,s*0.27,s*0.2,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#111';
+  ctx.beginPath(); ctx.arc(0,-s*0.58,s*0.1,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(-s*0.2,-s*0.86,s*0.09,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(s*0.2,-s*0.86,s*0.09,0,Math.PI*2); ctx.fill();
+}
+
+// ════════════════════════════════════════════════════════════
+//  PLAYER
+// ════════════════════════════════════════════════════════════
+let player, camX, camY, lastType;
+
+function initPlayer(type) {
+  lastType = type;
+  const spec = SPECS[type];
+  let sx=WW/2|0, sy=WH/2|0;
+  for(let t=0;t<2000;t++) {
+    const rx=5+Math.random()*(WW-10)|0, ry=5+Math.random()*(WH-10)|0;
+    if(tileAt(rx,ry)===T.GRASS) { sx=rx; sy=ry; break; }
+  }
+  player = {
+    type, x:sx*TILE+TILE/2, y:sy*TILE+TILE/2,
+    vx:0, vy:0, angle:0,
+    hp:100, hunger:90, thirst:85, stamina:100,
+    day:1, ticks:0, kills:0,
+    dead:false, sprint:false,
+    flashDmg:0, eatCool:0, attackCool:0,
+  };
+  camX = player.x - VW/2;
+  camY = player.y - VH/2;
+  document.getElementById('hud-ico').textContent = ICO[type];
+}
+
+// ════════════════════════════════════════════════════════════
+//  NPC ANIMALS
+// ════════════════════════════════════════════════════════════
+let npcs = [];
+const NPC_COUNTS = { wolf:9, fox:12, deer:20, rabbit:28, bear:4 };
+
+function spawnNPCs() {
+  npcs = [];
+  for(const[type,count] of Object.entries(NPC_COUNTS)) {
+    for(let i=0;i<count;i++) {
+      let tx=WW/2|0, ty=WH/2|0;
+      for(let t=0;t<500;t++) {
+        tx=4+Math.random()*(WW-8)|0; ty=4+Math.random()*(WH-8)|0;
+        if(!walkable(tx,ty)) continue;
+        const d=Math.hypot(tx-player.x/TILE, ty-player.y/TILE);
+        if(d<12) continue;
+        break;
+      }
+      npcs.push({
+        type, x:tx*TILE+TILE/2, y:ty*TILE+TILE/2,
+        vx:0, vy:0, angle:0, hp:100,
+        dead:false, state:'wander',
+        wAngle:Math.random()*Math.PI*2,
+        wTimer:60+Math.random()*180|0,
+        alertLevel:0,
+        target:null, attackCool:0,
+      });
+    }
+  }
+}
+
+function updateNPC(n) {
+  if(n.dead) return;
+  const spec = SPECS[n.type];
+  const isNight = dayPhase<0.18||dayPhase>0.82;
+  const spd = spec.spd * 0.8;
+  n.wTimer--; n.attackCool=Math.max(0,n.attackCool-1);
+
+  // Sense radius increases at night for predators
+  const senseR = spec.prey.length>0 ? (isNight?280:200) : 200;
+
+  // Find nearest threat and nearest prey
+  let nearThreat=null, nearPrey=null, tDist=senseR, pDist=senseR;
+
+  // Check vs player
+  const pd=Math.hypot(player.x-n.x, player.y-n.y);
+  if(!player.dead) {
+    if(spec.threats.includes(player.type) && pd<tDist) { tDist=pd; nearThreat=player; }
+    if(spec.prey.includes(player.type) && pd<pDist) { pDist=pd; nearPrey={x:player.x,y:player.y,isPlayer:true,type:player.type}; }
+  }
+  // Check vs other NPCs
+  for(const o of npcs) {
+    if(o===n||o.dead) continue;
+    const d=Math.hypot(o.x-n.x,o.y-n.y);
+    if(spec.threats.includes(o.type) && d<tDist) { tDist=d; nearThreat=o; }
+    if(spec.prey.includes(o.type) && d<pDist) { pDist=d; nearPrey=o; }
+  }
+
+  let tvx=0, tvy=0;
+  if(nearThreat && tDist<180) {
+    // Flee
+    n.state='flee'; n.alertLevel=0;
+    const dx=n.x-nearThreat.x, dy=n.y-nearThreat.y;
+    const d=Math.hypot(dx,dy)||1;
+    tvx=dx/d*spd*1.6; tvy=dy/d*spd*1.6;
+  } else if(nearPrey && pDist<senseR) {
+    // Hunt
+    n.state='hunt'; n.alertLevel=Math.min(1,(1-pDist/senseR)*1.5);
+    const dx=nearPrey.x-n.x, dy=nearPrey.y-n.y;
+    const d=Math.hypot(dx,dy)||1;
+    tvx=dx/d*spd*1.35; tvy=dy/d*spd*1.35;
+    // Attack
+    const hitR = spec.sz + (SPECS[nearPrey.type||'rabbit'].sz||10) + 6;
+    if(pDist<hitR && n.attackCool===0) {
+      n.attackCool=45;
+      if(nearPrey.isPlayer) {
+        const dmg = spec.sz;
+        player.hp = Math.max(0, player.hp-dmg);
+        player.flashDmg=20;
+        addEvent(`${ICO[n.type]} ${spec.prey[0]==='rabbit'?'Fox':'Wolf'} attacks! -${dmg} HP`, '#ff4444');
+        if(player.hp<=0) killPlayer(SPECS[n.type].name);
+      } else if(nearPrey.hp!==undefined) {
+        nearPrey.hp-=20;
+        if(nearPrey.hp<=0) nearPrey.dead=true;
+      }
+    }
+  } else {
+    // Wander
+    n.state='wander'; n.alertLevel=Math.max(0,n.alertLevel-0.02);
+    if(n.wTimer<=0) { n.wAngle+=(Math.random()-0.5)*1.5; n.wTimer=80+Math.random()*200|0; }
+    tvx=Math.cos(n.wAngle)*spd*0.7; tvy=Math.sin(n.wAngle)*spd*0.7;
+  }
+
+  // Smooth velocity
+  n.vx+=(tvx-n.vx)*0.14; n.vy+=(tvy-n.vy)*0.14;
+  moveEntity(n, n.vx, n.vy);
+  if(Math.hypot(n.vx,n.vy)>0.2) n.angle=Math.atan2(n.vy,n.vx);
+}
+
+// ════════════════════════════════════════════════════════════
+//  MOVEMENT + COLLISION
+// ════════════════════════════════════════════════════════════
+function moveEntity(e, vx, vy) {
+  const sz = (SPECS[e.type].sz||12)*0.55;
+  const nx = e.x+vx, ny = e.y+vy;
+  // X-axis
+  if(walkable(Math.floor((nx-sz)/TILE),Math.floor((e.y-sz)/TILE)) &&
+     walkable(Math.floor((nx+sz)/TILE),Math.floor((e.y-sz)/TILE)) &&
+     walkable(Math.floor((nx-sz)/TILE),Math.floor((e.y+sz)/TILE)) &&
+     walkable(Math.floor((nx+sz)/TILE),Math.floor((e.y+sz)/TILE))) e.x=nx;
+  // Y-axis
+  if(walkable(Math.floor((e.x-sz)/TILE),Math.floor((ny-sz)/TILE)) &&
+     walkable(Math.floor((e.x+sz)/TILE),Math.floor((ny-sz)/TILE)) &&
+     walkable(Math.floor((e.x-sz)/TILE),Math.floor((ny+sz)/TILE)) &&
+     walkable(Math.floor((e.x+sz)/TILE),Math.floor((ny+sz)/TILE))) e.y=ny;
+  e.x=Math.max(TILE,Math.min(PX_W-TILE,e.x));
+  e.y=Math.max(TILE,Math.min(PX_H-TILE,e.y));
+}
+
+// ════════════════════════════════════════════════════════════
+//  INPUT
+// ════════════════════════════════════════════════════════════
+const keys={};
+window.addEventListener('keydown',e=>{
+  keys[e.code]=keys[e.key]=true;
+  if(e.key==='Escape'&&gameState==='play') showSelect();
+  if((e.key==='e'||e.key==='E') && gameState==='play') doInteract();
+  if(e.code==='Space' && gameState==='play') doAttack();
+  e.preventDefault && (e.key==='ArrowUp'||e.key==='ArrowDown'||e.code==='Space') && e.preventDefault();
+});
+window.addEventListener('keyup',e=>{ keys[e.code]=keys[e.key]=false; });
+
+function doInteract() {
+  if(player.dead||player.eatCool>0) return;
+  const spec=SPECS[player.type];
+  const px=Math.floor(player.x/TILE), py=Math.floor(player.y/TILE);
+
+  // Drink water
+  for(let dy=-2;dy<=2;dy++) for(let dx=-2;dx<=2;dx++) {
+    const t=tileAt(px+dx,py+dy);
+    if(t===T.WATER||t===T.DEEP) {
+      player.thirst=Math.min(100,player.thirst+40);
+      player.eatCool=60;
+      addEvent('💧 You drink from the water.','#64b5f6'); return;
+    }
+  }
+  // Eat berries (herbivores or bears)
+  for(const b of berries) {
+    if(b.amt>0 && Math.abs(b.x-px)<=2 && Math.abs(b.y-py)<=2) {
+      const gain = spec.eats.length>0||player.type==='bear' ? 22 : 5;
+      b.amt--;
+      player.hunger=Math.min(100,player.hunger+gain);
+      player.eatCool=40;
+      addEvent(gain>10?'🍒 You eat berries. (+'+gain+' hunger)':'🍒 You nibble berries (you need meat...)','#ef9a9a'); return;
+    }
+  }
+  // Graze on tile
+  if(spec.eats.includes(tileAt(px,py))) {
+    player.hunger=Math.min(100,player.hunger+12);
+    player.eatCool=50;
+    addEvent('🌿 You graze.','#a5d6a7'); return;
+  }
+  if(spec.prey.length===0) addEvent('No food here — find water or berry bushes.','#888');
+  else addEvent('Nothing to eat here. Chase prey with SPACE.','#888');
+}
+
+function doAttack() {
+  if(player.dead||player.attackCool>0) return;
+  const spec=SPECS[player.type];
+  if(spec.prey.length===0) return;
+  let hit=false;
+  for(const n of npcs) {
+    if(n.dead||!spec.prey.includes(n.type)) continue;
+    const d=Math.hypot(n.x-player.x,n.y-player.y);
+    if(d<spec.sz+SPECS[n.type].sz+10) {
+      n.hp-=30; hit=true;
+      player.attackCool=30;
+      if(n.hp<=0) {
+        n.dead=true; player.kills++;
+        const gain=n.type==='deer'?50:n.type==='rabbit'?35:28;
+        player.hunger=Math.min(100,player.hunger+gain);
+        addEvent(`🥩 You kill a ${n.type}! (+${gain} hunger)`,'#ff8a65');
+      } else {
+        addEvent(`⚔️ You attack the ${n.type}!`,'#ffb74d');
+      }
+      break;
+    }
+  }
+  if(!hit && spec.prey.length>0) addEvent('No prey in range. Get closer!','#888');
+}
+
+// ════════════════════════════════════════════════════════════
+//  DAY/NIGHT CYCLE
+// ════════════════════════════════════════════════════════════
+// 1 day = 3600 ticks @ 60fps = 60 real seconds
+const FULL_DAY=3600;
+let dayTick=0, dayPhase=0.28;  // start at morning
+
+function getPhaseName() {
+  if(dayPhase<0.05||dayPhase>0.95) return 'MIDNIGHT';
+  if(dayPhase<0.18) return 'NIGHT';
+  if(dayPhase<0.28) return 'DAWN';
+  if(dayPhase<0.45) return 'MORNING';
+  if(dayPhase<0.60) return 'NOON';
+  if(dayPhase<0.72) return 'AFTERNOON';
+  if(dayPhase<0.82) return 'DUSK';
+  return 'NIGHT';
+}
+
+function getNightAlpha() {
+  // 0=day, 1=dark night
+  if(dayPhase<0.1)  return 0.82;
+  if(dayPhase<0.25) return 0.82-(dayPhase-0.1)/0.15*0.82;
+  if(dayPhase<0.72) return 0;
+  if(dayPhase<0.88) return (dayPhase-0.72)/0.16*0.82;
+  return 0.82;
+}
+
+// ════════════════════════════════════════════════════════════
+//  EVENT LOG
+// ════════════════════════════════════════════════════════════
+const events=[];
+function addEvent(msg,col='#ccc') {
+  events.push({msg,col,life:1.0});
+  if(events.length>5) events.shift();
+  const el=document.getElementById('elog');
+  el.innerHTML=events.map(e=>`<div class="emsg" style="color:${e.col};opacity:${e.life}">${e.msg}</div>`).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+//  TILE RENDERING
+// ════════════════════════════════════════════════════════════
+// Precompute visual detail offsets
+const DETAIL=[];
+const FLOWERS=[];
+function preDetails() {
+  DETAIL.length=0; FLOWERS.length=0;
+  for(let y=0;y<WH;y++) for(let x=0;x<WW;x++) {
+    const t=tileAt(x,y);
+    if(t===T.TALL) {
+      const b=[];
+      for(let i=0;i<5;i++) b.push({ox:(Math.random()-.5)*TILE*.85,oy:(Math.random()-.5)*TILE*.85,
+        h:5+Math.random()*8,lx:(Math.random()-.5)*7,col:Math.random()<0.3?'#1a5c12':'#1d6b14'});
+      DETAIL.push({x,y,b});
+    }
+    if(t===T.FOREST) {
+      DETAIL.push({x,y,tree:true,r:9+Math.random()*5,ox:(Math.random()-.5)*8,oy:(Math.random()-.5)*8});
+    }
+    if((t===T.GRASS||t===T.TALL)&&Math.random()<0.06) {
+      FLOWERS.push({x,y,ox:(Math.random()-.5)*TILE*.7,oy:(Math.random()-.5)*TILE*.7,
+        col:['#ff88bb','#ffee55','#cc44ee','#ff5577','#88ddff'][Math.floor(Math.random()*5)]});
+    }
+  }
+}
+
+const waterAnim=[0];
+function drawWorld(cx,cy) {
+  const tx0=Math.max(0,Math.floor(cx/TILE)-1);
+  const ty0=Math.max(0,Math.floor(cy/TILE)-1);
+  const tx1=Math.min(WW,tx0+Math.ceil(VW/TILE)+3);
+  const ty1=Math.min(WH,ty0+Math.ceil(VH/TILE)+3);
+
+  // Base tiles
+  for(let ty=ty0;ty<ty1;ty++) for(let tx=tx0;tx<tx1;tx++) {
+    const t=tileAt(tx,ty);
+    const sx=tx*TILE-cx, sy=ty*TILE-cy;
+    ctx.fillStyle=TILE_COLOR[t]; ctx.fillRect(sx,sy,TILE,TILE);
+    // Checker variation
+    if(t===T.GRASS&&(tx+ty)%2===0) { ctx.fillStyle='rgba(0,0,0,0.04)'; ctx.fillRect(sx,sy,TILE,TILE); }
+    if(t===T.TALL&&(tx+ty)%2===0)  { ctx.fillStyle='rgba(0,0,0,0.07)'; ctx.fillRect(sx,sy,TILE,TILE); }
+    // Water shimmer
+    if(t===T.WATER||t===T.DEEP) {
+      const sh=Math.sin(Date.now()*.0018+tx*.6+ty*.4)*.025+.025;
+      ctx.fillStyle=`rgba(180,230,255,${sh})`;
+      ctx.fillRect(sx,sy,TILE,TILE*.4);
+    }
+    // Sand ripple
+    if(t===T.SAND&&(tx*3+ty)%4===0) { ctx.fillStyle='rgba(255,255,255,0.07)'; ctx.fillRect(sx+2,sy+TILE*.45,TILE-4,2); }
+    // Rock texture
+    if(t===T.ROCK) {
+      ctx.fillStyle='rgba(0,0,0,0.12)';
+      ctx.beginPath(); ctx.arc(sx+TILE*.5,sy+TILE*.5,TILE*.35,0,Math.PI*2); ctx.fill();
+    }
+  }
+
+  // Detail layer: grass blades, trees, flowers
+  const now=Date.now();
+  for(const d of DETAIL) {
+    const sx=d.x*TILE+TILE/2-cx, sy=d.y*TILE+TILE/2-cy;
+    if(sx<-TILE||sx>VW+TILE||sy<-TILE||sy>VH+TILE) continue;
+    if(d.tree) {
+      ctx.fillStyle='rgba(0,0,0,0.18)';
+      ctx.beginPath(); ctx.arc(sx+d.ox,sy+d.oy,d.r,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(30,90,20,0.7)';
+      ctx.beginPath(); ctx.arc(sx+d.ox-2,sy+d.oy-2,d.r*.7,0,Math.PI*2); ctx.fill();
+    } else {
+      for(const b of d.b) {
+        const sway=Math.sin(now*.001+d.x*.3+b.ox)*.8;
+        ctx.strokeStyle=b.col; ctx.lineWidth=1.2;
+        ctx.beginPath(); ctx.moveTo(sx+b.ox,sy+b.oy+b.h);
+        ctx.quadraticCurveTo(sx+b.ox+b.lx+sway,sy+b.oy,sx+b.ox+b.lx*2+sway,sy+b.oy-b.h);
+        ctx.stroke();
+      }
+    }
+  }
+  for(const f of FLOWERS) {
+    const sx=f.x*TILE+TILE/2+f.ox-cx, sy=f.y*TILE+TILE/2+f.oy-cy;
+    if(sx<-10||sx>VW+10||sy<-10||sy>VH+10) continue;
+    ctx.fillStyle=f.col; ctx.beginPath(); ctx.arc(sx,sy,2.5,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.8)'; ctx.beginPath(); ctx.arc(sx,sy,.9,0,Math.PI*2); ctx.fill();
+  }
+
+  // Berry bushes
+  for(const b of berries) {
+    if(b.amt<=0) continue;
+    const sx=b.x*TILE+TILE/2-cx, sy=b.y*TILE+TILE/2-cy;
+    if(sx<-20||sx>VW+20||sy<-20||sy>VH+20) continue;
+    ctx.fillStyle='#1a5c14';
+    ctx.beginPath(); ctx.arc(sx,sy,8,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#cc2020';
+    for(let i=0;i<Math.min(b.amt,5);i++) {
+      const a=(i/5)*Math.PI*2+Date.now()*.0002;
+      ctx.beginPath(); ctx.arc(sx+Math.cos(a)*5,sy+Math.sin(a)*5,2.8,0,Math.PI*2); ctx.fill();
+    }
+  }
+
+  // Water proximity rings (visual guide)
+  for(let ty=ty0;ty<ty1;ty++) for(let tx=tx0;tx<tx1;tx++) {
+    if(tileAt(tx,ty)===T.WATER) {
+      const sx=tx*TILE+TILE/2-cx, sy=ty*TILE+TILE/2-cy;
+      const pulse=Math.sin(Date.now()*.001+tx+ty)*.5+.5;
+      ctx.strokeStyle=`rgba(100,180,255,${.07+pulse*.08})`; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(sx,sy,24,0,Math.PI*2); ctx.stroke();
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  DANGER ARROWS (screen edge)
+// ════════════════════════════════════════════════════════════
+function drawDangerArrows() {
+  const spec=SPECS[player.type];
+  for(const n of npcs) {
+    if(n.dead||!spec.threats.includes(n.type)) continue;
+    const dx=n.x-player.x, dy=n.y-player.y;
+    const d=Math.hypot(dx,dy);
+    if(d>550) continue;
+    const ang=Math.atan2(dy,dx);
+    const cx=VW/2, cy=VH/2;
+    const margin=48;
+    // Clamp point to screen edge
+    const slope=dy/dx;
+    let ex,ey;
+    if(Math.abs(dx)>(cx-margin)/Math.abs(Math.cos(ang))||Math.abs(dy)>(cy-margin)/Math.abs(Math.sin(ang))) {
+      const sx2=Math.sign(dx)*(cx-margin), sy2=Math.sign(dy)*(cy-margin);
+      if(Math.abs(dy)*Math.abs(cx-margin)>Math.abs(dx)*Math.abs(cy-margin)) { ey=sy2; ex=sy2/slope; }
+      else { ex=sx2; ey=sx2*slope; }
+    } else { ex=dx*.5; ey=dy*.5; }
+    ex+=cx; ey+=cy;
+
+    const pulse=0.55+Math.sin(Date.now()*.007)*0.45;
+    const alpha=(1-d/550)*(0.5+pulse*.5);
+    ctx.save();
+    ctx.translate(ex,ey); ctx.rotate(ang);
+    ctx.globalAlpha=alpha;
+    ctx.fillStyle='#ff3333'; ctx.shadowBlur=10; ctx.shadowColor='#ff0000';
+    ctx.beginPath(); ctx.moveTo(14,0); ctx.lineTo(-8,-7); ctx.lineTo(-8,7); ctx.closePath(); ctx.fill();
+    ctx.rotate(-ang); ctx.globalAlpha=alpha*.75;
+    ctx.fillStyle='#ffaaaa'; ctx.font='bold 9px sans-serif'; ctx.textAlign='center';
+    ctx.fillText(`${ICO[n.type]} ${Math.round(d/TILE)}m`,0,-14);
+    ctx.globalAlpha=1; ctx.shadowBlur=0;
+    ctx.restore();
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  MINIMAP
+// ════════════════════════════════════════════════════════════
+function drawMinimap() {
+  const mw=mc.width, mh=mc.height;
+  mctx.drawImage(mmCache,0,0,WW,WH,0,0,mw,mh);
+  const sx=mw/WW, sy=mh/WH;
+  // NPCs
+  for(const n of npcs) {
+    if(n.dead) continue;
+    mctx.fillStyle=SPECS[n.type].col;
+    mctx.fillRect(n.x/TILE*sx-1,n.y/TILE*sy-1,3,3);
+  }
+  // Player
+  mctx.fillStyle='#fff';
+  const px=player.x/TILE*sx, py=player.y/TILE*sy;
+  mctx.fillRect(px-2.5,py-2.5,5,5);
+  // Viewport rect
+  mctx.strokeStyle='rgba(255,255,255,0.3)'; mctx.lineWidth=0.7;
+  mctx.strokeRect(camX/TILE*sx,camY/TILE*sy,VW/TILE*sx,VH/TILE*sy);
+}
+
+// ════════════════════════════════════════════════════════════
+//  HUD UPDATE
+// ════════════════════════════════════════════════════════════
+function updateHUD() {
+  const p=v=>Math.max(0,Math.min(100,v|0));
+  const set=(id,val,maxCol,midCol,lowCol)=>{
+    const pct=p(val);
+    document.getElementById('b-'+id).style.cssText=
+      `width:${pct}%;background:${pct>60?maxCol:pct>30?midCol:lowCol}`;
+    document.getElementById('n-'+id).textContent=pct;
+  };
+  set('hp',     player.hp,     '#4caf50','#ffc107','#f44336');
+  set('hunger', player.hunger, '#fb8c00','#ff6f00','#f44336');
+  set('thirst', player.thirst, '#1e88e5','#e91e63','#f44336');
+  set('stamina',player.stamina,'#fdd835','#ff9800','#ff5722');
+  document.getElementById('hud-day').textContent=`DAY ${player.day}`;
+  document.getElementById('hud-phase').textContent=getPhaseName();
+}
+
+// ════════════════════════════════════════════════════════════
+//  GAME STATE
+// ════════════════════════════════════════════════════════════
+let gameState='select';
+
+function showSelect() {
+  gameState='select';
+  document.getElementById('sel').style.display='block';
+  document.getElementById('dead').style.display='none';
+  document.getElementById('hud').style.display='none';
+  document.getElementById('minimap').style.display='none';
+  document.getElementById('elog').style.display='none';
+  document.getElementById('ctrl-hint').style.display='none';
+}
+
+function startGame(type) {
+  gameState='play';
+  document.getElementById('sel').style.display='none';
+  document.getElementById('dead').style.display='none';
+  document.getElementById('hud').style.display='block';
+  document.getElementById('minimap').style.display='block';
+  document.getElementById('elog').style.display='block';
+  document.getElementById('ctrl-hint').style.display='block';
+  events.length=0;
+  genWorld();
+  preDetails();
+  initPlayer(type);
+  spawnNPCs();
+  dayTick=FULL_DAY*.28|0; dayPhase=.28;
+  addEvent(`🌿 You are a ${type}. Survive!`,'#a5d6a7');
+  const spec=SPECS[type];
+  if(spec.prey.length>0) addEvent(`🥩 Hunt with SPACE. Chase prey to kill.`,'#ef9a9a');
+  else addEvent(`🌿 Graze (E) and find water to eat/drink.`,'#90caf9');
+  addEvent(`⚠️ Red arrows = nearby threats.`,'#ffb74d');
+}
+
+function replayGame() { startGame(lastType||'rabbit'); }
+
+function killPlayer(cause) {
+  if(player.dead) return;
+  player.dead=true; gameState='dead';
+  setTimeout(()=>{
+    document.getElementById('dead').style.display='flex';
+    document.getElementById('dead-cause').textContent=`Cause: ${cause}`;
+    const days=player.day, h=Math.floor((dayTick/FULL_DAY)*24);
+    document.getElementById('dead-stats').innerHTML=
+      `You played as <b>${ICO[player.type]} ${player.type.charAt(0).toUpperCase()+player.type.slice(1)}</b><br>`+
+      `Survived <b>${days} day${days!==1?'s':''}, ${h} hours</b><br>`+
+      (player.kills>0?`Prey killed: <b>${player.kills}</b><br>`:'')+
+      `Hunger: <b>${player.hunger|0}</b>  Thirst: <b>${player.thirst|0}</b>`;
+  },600);
+}
+
+// ════════════════════════════════════════════════════════════
+//  FOOTSTEPS
+// ════════════════════════════════════════════════════════════
+const footsteps=[];
+let fTimer=0;
+function spawnFoot() {
+  footsteps.push({x:player.x,y:player.y,a:player.angle,life:1.0});
+  if(footsteps.length>30) footsteps.shift();
+}
+function drawFeet(cx,cy) {
+  for(const f of footsteps) {
+    f.life-=0.012;
+    if(f.life<=0) continue;
+    ctx.save();
+    ctx.translate(f.x-cx,f.y-cy); ctx.rotate(f.a);
+    ctx.globalAlpha=f.life*.15;
+    ctx.fillStyle='#000';
+    ctx.beginPath(); ctx.ellipse(0,0,3,5,0,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  MAIN LOOP
+// ════════════════════════════════════════════════════════════
+let lastTs=0, npcTimer=0;
+
+function update(ts) {
+  if(gameState!=='play'||player.dead) return;
+  const dt=Math.min(ts-lastTs,50); lastTs=ts;
+  player.ticks++; player.eatCool=Math.max(0,player.eatCool-1);
+  player.attackCool=Math.max(0,player.attackCool-1);
+  if(player.flashDmg>0) player.flashDmg--;
+
+  // Day cycle
+  dayTick=(dayTick+1)%FULL_DAY;
+  dayPhase=dayTick/FULL_DAY;
+  if(dayTick===0) { player.day++; addEvent(`🌅 Day ${player.day} begins.`,'#ffe082'); }
+
+  const spec=SPECS[player.type];
+  player.sprint=(keys['ShiftLeft']||keys['Shift'])&&player.stamina>8;
+  const spd=spec.spd*(player.sprint?spec.sprint:1.0);
+
+  // Movement
+  let mx=0, my=0;
+  if(keys['ArrowLeft']||keys['KeyA']||keys['a']) mx-=1;
+  if(keys['ArrowRight']||keys['KeyD']||keys['d']) mx+=1;
+  if(keys['ArrowUp']||keys['KeyW']||keys['w']) my-=1;
+  if(keys['ArrowDown']||keys['KeyS']||keys['s']) my+=1;
+
+  if(mx||my) {
+    const mag=Math.hypot(mx,my)||1;
+    mx=mx/mag; my=my/mag;
+    player.angle=Math.atan2(my,mx);
+    const curT=tileAt(Math.floor(player.x/TILE),Math.floor(player.y/TILE));
+    const slowM=TILE_SLOW[curT]??1;
+    moveEntity(player,mx*spd*slowM,my*spd*slowM);
+    fTimer++;
+    if(fTimer>(player.sprint?7:13)){spawnFoot();fTimer=0;}
+  }
+
+  // Stamina
+  if(player.sprint&&(mx||my)) player.stamina=Math.max(0,player.stamina-.4);
+  else player.stamina=Math.min(100,player.stamina+.25);
+
+  // Needs drain
+  const nightMult=getNightAlpha()>0.3?1.3:1;
+  player.hunger=Math.max(0,player.hunger-spec.hungerR*nightMult);
+  player.thirst=Math.max(0,player.thirst-spec.thirstR*(dayPhase>.25&&dayPhase<.75?1.2:1));
+
+  // Auto drink in water
+  const curT2=tileAt(Math.floor(player.x/TILE),Math.floor(player.y/TILE));
+  if(curT2===T.WATER) player.thirst=Math.min(100,player.thirst+.18);
+  // Auto graze
+  if(spec.eats.includes(curT2)&&player.hunger<98) player.hunger=Math.min(100,player.hunger+.025);
+
+  // Health damage from starvation / dehydration
+  if(player.hunger<=0)  player.hp=Math.max(0,player.hp-.06);
+  if(player.thirst<=0)  player.hp=Math.max(0,player.hp-.09);
+  if(player.hp<=0) { killPlayer(player.hunger<=0?'Starvation':player.thirst<=0?'Dehydration':'Killed'); return; }
+
+  // NPC updates (every other frame for performance)
+  npcTimer++;
+  if(npcTimer>=2) { npcTimer=0; for(const n of npcs) updateNPC(n); }
+
+  // Prune + respawn NPCs
+  if(player.ticks%360===0) {
+    npcs=npcs.filter(n=>!n.dead);
+    for(const[type,target] of Object.entries(NPC_COUNTS)) {
+      const have=npcs.filter(n=>n.type===type).length;
+      for(let i=have;i<target-2;i++) {
+        let tx=4,ty=4;
+        for(let t=0;t<200;t++){
+          tx=4+Math.random()*(WW-8)|0; ty=4+Math.random()*(WH-8)|0;
+          if(walkable(tx,ty)&&Math.hypot(tx-player.x/TILE,ty-player.y/TILE)>16) break;
+        }
+        npcs.push({type,x:tx*TILE+TILE/2,y:ty*TILE+TILE/2,vx:0,vy:0,angle:0,hp:100,
+          dead:false,state:'wander',wAngle:Math.random()*Math.PI*2,wTimer:60,alertLevel:0,target:null,attackCool:0});
+      }
+    }
+  }
+
+  // Event log fade
+  const el=document.getElementById('elog');
+  el.innerHTML=events.map(e=>{e.life=Math.max(0,e.life-.0015);
+    return `<div class="emsg" style="color:${e.col};opacity:${e.life}">${e.msg}</div>`;}).join('');
+
+  // Camera with smooth follow + bounds
+  camX+=(player.x-VW/2-camX)*.1;
+  camY+=(player.y-VH/2-camY)*.1;
+  camX=Math.max(0,Math.min(PX_W-VW,camX));
+  camY=Math.max(0,Math.min(PX_H-VH,camY));
+
+  updateHUD();
+}
+
+function render() {
+  if(gameState!=='play') return;
+  ctx.fillStyle='#040906'; ctx.fillRect(0,0,VW,VH);
+
+  drawWorld(camX,camY);
+  drawFeet(camX,camY);
+
+  // Draw visible NPCs
+  for(const n of npcs) {
+    if(n.dead) continue;
+    const sx=n.x-camX, sy=n.y-camY;
+    if(sx<-60||sx>VW+60||sy<-60||sy>VH+60) continue;
+    sprite(n.type,sx,sy,n.angle,SPECS[n.type].sz,false,n.alertLevel);
+    // HP bar for wounded
+    if(n.hp<100) {
+      const bw=SPECS[n.type].sz*2.5;
+      ctx.fillStyle='rgba(0,0,0,0.55)';
+      ctx.fillRect(sx-bw/2,sy-SPECS[n.type].sz-9,bw,5);
+      ctx.fillStyle=n.hp>60?'#4caf50':n.hp>30?'#ffc107':'#f44336';
+      ctx.fillRect(sx-bw/2,sy-SPECS[n.type].sz-9,bw*n.hp/100,5);
+    }
+  }
+
+  // Player
+  const ppx=player.x-camX, ppy=player.y-camY;
+  const sz=SPECS[player.type].sz;
+  // Damage flash
+  if(player.flashDmg>0) {
+    ctx.save();
+    ctx.globalAlpha=.35*(player.flashDmg/20);
+    ctx.shadowBlur=30; ctx.shadowColor='#ff0000';
+    ctx.fillStyle='#ff0000';
+    ctx.beginPath(); ctx.arc(ppx,ppy,sz*2.2,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  // Green halo
+  ctx.save(); ctx.globalAlpha=.12;
+  ctx.shadowBlur=18; ctx.shadowColor='#00ff88';
+  ctx.fillStyle='#00ff88';
+  ctx.beginPath(); ctx.arc(ppx,ppy,sz*2.4,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  sprite(player.type,ppx,ppy,player.angle,sz,true,0);
+
+  // YOU label
+  ctx.fillStyle='rgba(255,255,255,0.8)';
+  ctx.font='bold 10px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('YOU',ppx,ppy-sz-16);
+  ctx.textAlign='left';
+
+  // Night overlay with spotlight
+  const dk=getNightAlpha();
+  if(dk>0) {
+    const vr=Math.min(VW,VH)*(0.28+player.stamina*.0012);
+    const grad=ctx.createRadialGradient(ppx,ppy,vr*.3,ppx,ppy,vr*1.4);
+    grad.addColorStop(0,'rgba(2,4,2,0)');
+    grad.addColorStop(0.6,`rgba(2,4,2,${dk*.5})`);
+    grad.addColorStop(1,`rgba(2,4,2,${dk})`);
+    ctx.fillStyle=grad; ctx.fillRect(0,0,VW,VH);
+    // Dark corners
+    ctx.fillStyle=`rgba(2,4,2,${dk*.7})`;
+    ctx.fillRect(0,0,VW,VH);
+    // Re-reveal center
+    const g2=ctx.createRadialGradient(ppx,ppy,0,ppx,ppy,vr);
+    g2.addColorStop(0,`rgba(2,4,2,0)`);
+    g2.addColorStop(1,`rgba(2,4,2,${dk*.7})`);
+    ctx.fillStyle=g2; ctx.fillRect(0,0,VW,VH);
+  }
+
+  drawDangerArrows();
+  drawMinimap();
+}
+
+function loop(ts) {
+  requestAnimationFrame(loop);
+  update(ts);
+  render();
+}
+requestAnimationFrame(ts=>{lastTs=ts;loop(ts);});
+</script>
+</body>
+</html>
