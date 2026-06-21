@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wild Ecosystem — Animal Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#04040e;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;user-select:none}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%;display:block}
+
+/* ── HUD ── */
+#hud{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;gap:10px;
+  background:rgba(4,4,14,0.88);backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(255,255,255,0.07);padding:0 18px;height:50px}
+.hud-logo{color:#fff;font-weight:900;font-size:13px;letter-spacing:2px;text-decoration:none;
+  margin-right:6px;white-space:nowrap;opacity:.8}
+.hud-logo:hover{opacity:1}
+.sep{width:1px;height:22px;background:rgba(255,255,255,0.1);flex-shrink:0}
+
+.stat-block{display:flex;align-items:center;gap:6px}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.cnt{color:#fff;font-weight:800;font-size:14px;min-width:28px}
+.lbl{color:rgba(255,255,255,0.38);font-size:10px;letter-spacing:.5px}
+.day-lbl{color:rgba(255,255,255,0.35);font-size:10px;letter-spacing:.5px}
+
+.spacer{flex:1}
+
+/* Mode buttons */
+.mode-row{display:flex;gap:4px}
+.mbtn{padding:5px 11px;border:1px solid rgba(255,255,255,0.12);border-radius:6px;
+  background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.45);
+  font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.3px;white-space:nowrap}
+.mbtn:hover{background:rgba(255,255,255,0.1);color:#fff}
+.mbtn.active-r{background:#d63a7a;border-color:#ff4da6;color:#fff;box-shadow:0 0 10px rgba(255,77,166,0.4)}
+.mbtn.active-w{background:#1a6aba;border-color:#4da6ff;color:#fff;box-shadow:0 0 10px rgba(77,166,255,0.4)}
+.mbtn.active-g{background:#1a7a2e;border-color:#00e84d;color:#fff;box-shadow:0 0 10px rgba(0,232,77,0.4)}
+.mbtn.active-d{background:#7a3d1a;border-color:#ff8a3d;color:#fff;box-shadow:0 0 10px rgba(255,138,61,0.4)}
+
+/* Speed buttons */
+.spd-row{display:flex;gap:3px}
+.sbtn{padding:5px 9px;border:1px solid rgba(255,255,255,0.1);border-radius:5px;
+  background:transparent;color:rgba(255,255,255,0.35);font-size:10px;cursor:pointer;transition:all .12s}
+.sbtn:hover,.sbtn.on{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.25)}
+.sbtn.on{border-color:rgba(255,255,255,0.4)}
+
+/* Reset btn */
+.reset-btn{padding:5px 11px;border:1px solid rgba(255,255,255,0.1);border-radius:6px;
+  background:transparent;color:rgba(255,255,255,0.35);font-size:11px;cursor:pointer;transition:all .15s}
+.reset-btn:hover{background:rgba(255,80,80,0.15);border-color:rgba(255,80,80,0.4);color:#ff8080}
+
+/* ── Graph bar ── */
+#graph-bar{position:fixed;bottom:0;left:0;right:0;z-index:20;height:72px;
+  background:rgba(4,4,14,0.82);backdrop-filter:blur(6px);
+  border-top:1px solid rgba(255,255,255,0.06);padding:7px 18px 5px}
+.graph-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.graph-title{font-size:9px;letter-spacing:1.5px;color:rgba(255,255,255,0.25);text-transform:uppercase}
+.graph-legend{display:flex;gap:12px}
+.g-leg{display:flex;align-items:center;gap:4px;font-size:9px;color:rgba(255,255,255,0.35)}
+.g-leg .g-dot{width:6px;height:6px;border-radius:50%}
+#gc{display:block;width:100%;height:44px}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%);
+  background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);
+  color:rgba(255,255,255,0.5);font-size:11px;padding:6px 14px;border-radius:20px;
+  pointer-events:none;transition:opacity .5s;white-space:nowrap;z-index:30}
+
+/* ── Extinction warning ── */
+#warn{position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:30;
+  background:rgba(255,60,60,0.15);border:1px solid rgba(255,60,60,0.4);
+  color:#ff9090;font-size:12px;padding:7px 18px;border-radius:8px;
+  pointer-events:none;display:none;text-align:center}
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<div id="hud">
+  <a class="hud-logo" href="index.html">← ANIMAL GAMES</a>
+  <div class="sep"></div>
+  <div class="stat-block">
+    <div class="dot" style="background:#ff4da6;box-shadow:0 0 5px #ff4da6"></div>
+    <span class="cnt" id="cnt-r">0</span>
+    <span class="lbl">RABBITS</span>
+  </div>
+  <div class="sep"></div>
+  <div class="stat-block">
+    <div class="dot" style="background:#4da6ff;box-shadow:0 0 5px #4da6ff"></div>
+    <span class="cnt" id="cnt-w">0</span>
+    <span class="lbl">WOLVES</span>
+  </div>
+  <div class="sep"></div>
+  <div class="stat-block">
+    <div class="dot" style="background:#ff8a3d;box-shadow:0 0 5px #ff8a3d"></div>
+    <span class="cnt" id="cnt-d">0</span>
+    <span class="lbl">DEER</span>
+  </div>
+  <div class="sep"></div>
+  <span class="day-lbl" id="day-lbl">DAY 1</span>
+  <div class="spacer"></div>
+
+  <div class="mode-row">
+    <button class="mbtn active-r" id="mbtn-r" onclick="setMode('r')">🐰 Rabbit</button>
+    <button class="mbtn" id="mbtn-w" onclick="setMode('w')">🐺 Wolf</button>
+    <button class="mbtn" id="mbtn-d" onclick="setMode('d')">🦌 Deer</button>
+    <button class="mbtn" id="mbtn-g" onclick="setMode('g')">🌿 Grass</button>
+  </div>
+  <div class="sep"></div>
+  <div class="spd-row">
+    <button class="sbtn" onclick="setSpeed(0.5)">½×</button>
+    <button class="sbtn on" id="s1" onclick="setSpeed(1)">1×</button>
+    <button class="sbtn" onclick="setSpeed(2)">2×</button>
+    <button class="sbtn" onclick="setSpeed(5)">5×</button>
+  </div>
+  <div class="sep"></div>
+  <button class="reset-btn" onclick="resetSim()">↺ Reset</button>
+</div>
+
+<div id="graph-bar">
+  <div class="graph-head">
+    <span class="graph-title">Population Over Time</span>
+    <div class="graph-legend">
+      <div class="g-leg"><div class="g-dot" style="background:#ff4da6"></div>Rabbits</div>
+      <div class="g-leg"><div class="g-dot" style="background:#4da6ff"></div>Wolves</div>
+      <div class="g-leg"><div class="g-dot" style="background:#ff8a3d"></div>Deer</div>
+    </div>
+  </div>
+  <canvas id="gc"></canvas>
+</div>
+
+<div id="toast">Click the canvas to spawn — use mode buttons above to switch</div>
+<div id="warn" id="warn"></div>
+
+<script>
+// ── Canvas & dims ─────────────────────────────────────────
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const gcv = document.getElementById('gc');
+const gctx = gcv.getContext('2d');
+
+const HUD = 50, GBAR = 72;
+let W, H, PLAY_H;
+
+function resize() {
+  W = cv.width = window.innerWidth;
+  H = cv.height = window.innerHeight;
+  PLAY_H = H - HUD - GBAR;
+  gcv.width = gcv.offsetWidth;
+  gcv.height = gcv.offsetHeight;
+  initGrass();
+}
+window.addEventListener('resize', resize);
+
+// ── Grass ─────────────────────────────────────────────────
+const CELL = 16;
+let COLS, ROWS, grass, grassGrow;
+
+function initGrass() {
+  COLS = Math.ceil(W / CELL);
+  ROWS = Math.ceil(PLAY_H / CELL);
+  grass = new Float32Array(COLS * ROWS);
+  grassGrow = new Float32Array(COLS * ROWS);
+  for (let i = 0; i < grass.length; i++) {
+    grass[i] = 0.2 + Math.random() * 0.8;
+    grassGrow[i] = 0.00025 + Math.random() * 0.0003;
+  }
+}
+
+function gi(col, row) { return row * COLS + col; }
+function worldToCell(x, y) {
+  return { col: Math.floor(x / CELL), row: Math.floor((y - HUD) / CELL) };
+}
+function cellCenter(col, row) {
+  return { x: col * CELL + CELL / 2, y: HUD + row * CELL + CELL / 2 };
+}
+
+function updateGrass() {
+  for (let i = 0; i < grass.length; i++) {
+    if (grass[i] < 1.0) grass[i] = Math.min(1.0, grass[i] + grassGrow[i]);
+  }
+}
+
+// ── Entity factory ────────────────────────────────────────
+const RABBIT = 0, WOLF = 1, DEER = 2;
+
+function mkEntity(type, x, y) {
+  const isBig = type === DEER;
+  return {
+    type,
+    x: x ?? (20 + Math.random() * (W - 40)),
+    y: y ?? (HUD + 20 + Math.random() * (PLAY_H - 40)),
+    vx: (Math.random() - 0.5) * 2,
+    vy: (Math.random() - 0.5) * 2,
+    energy: 0.6 + Math.random() * 0.35,
+    age: 0,
+    repCool: type === WOLF ? 350 : 200,
+    dead: false,
+    size: type === RABBIT ? 5.5 : type === DEER ? 9 : 10,
+    wAngle: Math.random() * Math.PI * 2,
+    flash: 0,
+    huntTarget: null,
+    fleeFrom: null,
+  };
+}
+
+// ── Particle system ───────────────────────────────────────
+let particles = [];
+
+function burst(x, y, color, n, spd) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const s = spd * (0.4 + Math.random() * 0.8);
+    particles.push({
+      x, y,
+      vx: Math.cos(a) * s, vy: Math.sin(a) * s,
+      life: 1.0, decay: 0.025 + Math.random() * 0.03,
+      color, size: 1.5 + Math.random() * 2.5,
+    });
+  }
+}
+
+function updateParticles() {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vx *= 0.88; p.vy *= 0.88;
+    p.life -= p.decay;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+// ── Spatial hash ──────────────────────────────────────────
+const HCELL = 80;
+let hashMap = new Map();
+
+function buildHash(entities) {
+  hashMap.clear();
+  for (const a of entities) {
+    if (a.dead) continue;
+    const hx = Math.floor(a.x / HCELL), hy = Math.floor(a.y / HCELL);
+    const key = hx * 100000 + hy;
+    if (!hashMap.has(key)) hashMap.set(key, []);
+    hashMap.get(key).push(a);
+  }
+}
+
+function nearby(x, y, radius) {
+  const r = Math.ceil(radius / HCELL), res = [];
+  const hx0 = Math.floor(x / HCELL), hy0 = Math.floor(y / HCELL);
+  for (let dx = -r; dx <= r; dx++) {
+    for (let dy = -r; dy <= r; dy++) {
+      const bucket = hashMap.get((hx0 + dx) * 100000 + (hy0 + dy));
+      if (bucket) for (const a of bucket) res.push(a);
+    }
+  }
+  return res;
+}
+
+function nearest(x, y, type, radius) {
+  let best = null, minD2 = radius * radius;
+  for (const a of nearby(x, y, radius)) {
+    if (a.dead || (type !== undefined && a.type !== type)) continue;
+    const d2 = (a.x - x) ** 2 + (a.y - y) ** 2;
+    if (d2 < minD2) { minD2 = d2; best = a; }
+  }
+  return best;
+}
+
+// ── Steering ──────────────────────────────────────────────
+function steerToward(a, tx, ty, weight, maxSpd) {
+  const dx = tx - a.x, dy = ty - a.y;
+  const d = Math.hypot(dx, dy);
+  if (d < 0.5) return;
+  a.vx += (dx / d * maxSpd - a.vx) * weight;
+  a.vy += (dy / d * maxSpd - a.vy) * weight;
+}
+
+function steerAway(a, fx, fy, weight, maxSpd) {
+  steerToward(a, a.x * 2 - fx, a.y * 2 - fy, weight, maxSpd);
+}
+
+function wander(a, weight, maxSpd) {
+  a.wAngle += (Math.random() - 0.5) * 0.35;
+  steerToward(a, a.x + Math.cos(a.wAngle) * 60, a.y + Math.sin(a.wAngle) * 60, weight, maxSpd);
+}
+
+function separate(a, list, radius, weight, maxSpd) {
+  for (const b of list) {
+    if (b === a || b.dead) continue;
+    const d = Math.hypot(b.x - a.x, b.y - a.y);
+    if (d < radius && d > 0.1) steerAway(a, b.x, b.y, weight * (1 - d / radius), maxSpd);
+  }
+}
+
+function clampSpeed(a, max) {
+  const s = Math.hypot(a.vx, a.vy);
+  if (s > max) { a.vx = a.vx / s * max; a.vy = a.vy / s * max; }
+}
+
+function bounce(a) {
+  const pad = 15, minY = HUD + pad, maxY = HUD + PLAY_H - pad;
+  if (a.x < pad)     { a.vx += 0.6; a.x = pad; }
+  if (a.x > W - pad) { a.vx -= 0.6; a.x = W - pad; }
+  if (a.y < minY)    { a.vy += 0.6; a.y = minY; }
+  if (a.y > maxY)    { a.vy -= 0.6; a.y = maxY; }
+}
+
+// ── Population lists ──────────────────────────────────────
+let rabbits = [], wolves = [], deer = [];
+function all() { return [...rabbits, ...wolves, ...deer]; }
+function living(list) { return list.filter(a => !a.dead); }
+
+// ── Entity update ─────────────────────────────────────────
+const MAX_RABBITS = 220, MAX_WOLVES = 55, MAX_DEER = 80;
+
+function updateRabbit(r) {
+  if (r.dead) return;
+  r.age++; r.energy -= 0.00085; if (r.flash > 0) r.flash--;
+  if (r.repCool > 0) r.repCool--;
+  if (r.energy <= 0 || r.age > 5000) { die(r, '#ff4da6'); return; }
+
+  const preds = nearby(r.x, r.y, 190).filter(a => !a.dead && (a.type === WOLF));
+  if (preds.length > 0) {
+    let worst = preds[0], wd = Infinity;
+    for (const p of preds) { const d = Math.hypot(p.x-r.x,p.y-r.y); if(d<wd){wd=d;worst=p;} }
+    steerAway(r, worst.x, worst.y, 0.22, 4.0);
+    r.fleeFrom = worst;
+  } else {
+    r.fleeFrom = null;
+    if (r.energy < 0.55) {
+      // Seek grass
+      const { col, row } = worldToCell(r.x, r.y);
+      let bG = -1, bC = -1, bR = -1;
+      const sr = 6;
+      for (let dc = -sr; dc <= sr; dc++) for (let dr = -sr; dr <= sr; dr++) {
+        const c2 = col+dc, r2 = row+dr;
+        if (c2 < 0 || c2 >= COLS || r2 < 0 || r2 >= ROWS) continue;
+        const g = grass[gi(c2, r2)];
+        if (g > bG) { bG = g; bC = c2; bR = r2; }
+      }
+      if (bG > 0.08) {
+        const { x: tx, y: ty } = cellCenter(bC, bR);
+        steerToward(r, tx, ty, 0.09, 2.2);
+        if (Math.hypot(tx - r.x, ty - r.y) < CELL * 1.5) {
+          const idx = gi(bC, bR);
+          const eat = Math.min(grass[idx], 0.14);
+          grass[idx] -= eat;
+          r.energy = Math.min(1.0, r.energy + eat * 1.6);
+          if (eat > 0.04) burst(r.x, r.y, '#00e84d', 2, 0.8);
+        }
+      } else wander(r, 0.05, 1.8);
+    } else {
+      wander(r, 0.045, 1.8);
+    }
+  }
+
+  const peers = nearby(r.x, r.y, 30).filter(a => a.type === RABBIT && !a.dead && a !== r);
+  separate(r, peers, 30, 0.06, 2.2);
+  clampSpeed(r, preds.length > 0 ? 4.0 : 2.2);
+  r.x += r.vx; r.y += r.vy; bounce(r);
+
+  if (r.energy > 0.83 && r.repCool === 0 && living(rabbits).length < MAX_RABBITS) {
+    r.energy -= 0.33; r.repCool = 180 + Math.random() * 80 | 0;
+    const b = mkEntity(RABBIT, r.x + (Math.random()-0.5)*18, r.y + (Math.random()-0.5)*18);
+    b.energy = 0.42; rabbits.push(b); r.flash = 18;
+    burst(r.x, r.y, '#ffb3dd', 7, 1.8);
+  }
+}
+
+function updateWolf(w) {
+  if (w.dead) return;
+  w.age++; w.energy -= 0.00115; if (w.flash > 0) w.flash--;
+  if (w.repCool > 0) w.repCool--;
+  if (w.energy <= 0 || w.age > 6000) { die(w, '#4da6ff'); return; }
+
+  // Hunt prey — prefer rabbit, also attack deer
+  const hunt = w.energy < 0.82 || w.huntTarget;
+  let target = null;
+  if (hunt) {
+    const rNear = nearest(w.x, w.y, RABBIT, 260);
+    const dNear = nearest(w.x, w.y, DEER, 300);
+    if (rNear && dNear) {
+      target = Math.hypot(rNear.x-w.x,rNear.y-w.y) < Math.hypot(dNear.x-w.x,dNear.y-w.y)*1.3 ? rNear : dNear;
+    } else { target = rNear || dNear; }
+  }
+
+  if (target) {
+    steerToward(w, target.x, target.y, 0.13, 3.2);
+    w.huntTarget = target;
+    const d = Math.hypot(target.x - w.x, target.y - w.y);
+    if (d < w.size + target.size + 3) {
+      const gain = target.type === DEER ? 0.55 : 0.42;
+      target.dead = true;
+      w.energy = Math.min(1.0, w.energy + gain);
+      w.flash = 12;
+      burst(target.x, target.y, '#ff2244', 14, 3.2);
+      burst(target.x, target.y, target.type === DEER ? '#ff8a3d' : '#ff4da6', 7, 1.8);
+    }
+  } else {
+    w.huntTarget = null;
+    wander(w, 0.04, 1.6);
+  }
+
+  const peers = nearby(w.x, w.y, 55).filter(a => a.type === WOLF && !a.dead && a !== w);
+  separate(w, peers, 55, 0.055, 1.8);
+  clampSpeed(w, target ? 3.2 : 1.8);
+  w.x += w.vx; w.y += w.vy; bounce(w);
+
+  if (w.energy > 0.88 && w.repCool === 0 && living(wolves).length < MAX_WOLVES) {
+    w.energy -= 0.42; w.repCool = 320 + Math.random() * 120 | 0;
+    const b = mkEntity(WOLF, w.x + (Math.random()-0.5)*28, w.y + (Math.random()-0.5)*28);
+    b.energy = 0.44; wolves.push(b); w.flash = 18;
+    burst(w.x, w.y, '#99ccff', 8, 2.0);
+  }
+}
+
+function updateDeer(d) {
+  if (d.dead) return;
+  d.age++; d.energy -= 0.0007; if (d.flash > 0) d.flash--;
+  if (d.repCool > 0) d.repCool--;
+  if (d.energy <= 0 || d.age > 7000) { die(d, '#ff8a3d'); return; }
+
+  const preds = nearby(d.x, d.y, 230).filter(a => !a.dead && a.type === WOLF);
+  if (preds.length > 0) {
+    let worst = preds[0], wd = Infinity;
+    for (const p of preds) { const dist = Math.hypot(p.x-d.x,p.y-d.y); if(dist<wd){wd=dist;worst=p;} }
+    steerAway(d, worst.x, worst.y, 0.18, 3.5);
+  } else if (d.energy < 0.5) {
+    const { col, row } = worldToCell(d.x, d.y);
+    let bG = -1, bC = -1, bR2 = -1;
+    const sr = 8;
+    for (let dc = -sr; dc <= sr; dc++) for (let dr = -sr; dr <= sr; dr++) {
+      const c2 = col+dc, r2 = row+dr;
+      if (c2 < 0 || c2 >= COLS || r2 < 0 || r2 >= ROWS) continue;
+      const g = grass[gi(c2, r2)];
+      if (g > bG) { bG = g; bC = c2; bR2 = r2; }
+    }
+    if (bG > 0.08) {
+      const { x: tx, y: ty } = cellCenter(bC, bR2);
+      steerToward(d, tx, ty, 0.07, 2.0);
+      if (Math.hypot(tx - d.x, ty - d.y) < CELL * 1.5) {
+        const idx = gi(bC, bR2);
+        const eat = Math.min(grass[idx], 0.2);
+        grass[idx] -= eat;
+        d.energy = Math.min(1.0, d.energy + eat * 1.3);
+      }
+    } else wander(d, 0.04, 1.6);
+  } else {
+    wander(d, 0.04, 1.8);
+  }
+
+  const peers = nearby(d.x, d.y, 40).filter(a => a.type === DEER && !a.dead && a !== d);
+  separate(d, peers, 40, 0.055, 2.0);
+  clampSpeed(d, preds.length > 0 ? 3.5 : 2.0);
+  d.x += d.vx; d.y += d.vy; bounce(d);
+
+  if (d.energy > 0.82 && d.repCool === 0 && living(deer).length < MAX_DEER) {
+    d.energy -= 0.34; d.repCool = 250 + Math.random() * 100 | 0;
+    const b = mkEntity(DEER, d.x + (Math.random()-0.5)*25, d.y + (Math.random()-0.5)*25);
+    b.energy = 0.42; deer.push(b); d.flash = 18;
+    burst(d.x, d.y, '#ffd0a0', 8, 1.8);
+  }
+}
+
+function die(a, color) {
+  a.dead = true;
+  burst(a.x, a.y, color, 8, 2.0);
+}
+
+// ── Population history ────────────────────────────────────
+const history = [];
+const MAX_HIST = 500;
+function recordHistory() {
+  history.push({
+    r: living(rabbits).length,
+    w: living(wolves).length,
+    d: living(deer).length,
+  });
+  if (history.length > MAX_HIST) history.shift();
+}
+
+// ── Render ────────────────────────────────────────────────
+function drawGrass() {
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const g = grass[gi(col, row)];
+      if (g < 0.04) continue;
+      const x = col * CELL, y = HUD + row * CELL;
+      // Vivid green to dark teal gradient based on energy
+      const hue = 130 + (1 - g) * 30;
+      const sat = 70 + g * 30;
+      const lit = 6 + g * 26;
+      ctx.fillStyle = `hsl(${hue},${sat}%,${lit}%)`;
+      ctx.globalAlpha = 0.25 + g * 0.6;
+      ctx.fillRect(x, y, CELL, CELL);
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawAnimal(a) {
+  if (a.dead) return;
+  const s = a.size;
+  const fl = a.flash > 0 ? (Math.sin(a.flash * 0.9) * 0.5 + 0.5) : 0;
+
+  let hue, sat, lit, glowCol;
+  if (a.type === RABBIT) {
+    hue = 330; sat = 100; lit = 58 + a.energy * 10; glowCol = '#ff4da6';
+  } else if (a.type === WOLF) {
+    hue = 210; sat = 100; lit = 55 + a.energy * 12; glowCol = '#4da6ff';
+  } else {
+    hue = 28; sat = 100; lit = 52 + a.energy * 12; glowCol = '#ff8a3d';
+  }
+
+  // Glow
+  ctx.shadowBlur = 16 + fl * 12;
+  ctx.shadowColor = glowCol;
+  ctx.fillStyle = `hsl(${hue},${sat}%,${lit}%)`;
+  ctx.beginPath();
+  ctx.arc(a.x, a.y, s + fl * 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Specular highlight
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx.beginPath();
+  ctx.arc(a.x - s * 0.3, a.y - s * 0.3, s * 0.3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Hunt line
+  if (a.huntTarget && !a.huntTarget.dead) {
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(a.huntTarget.x, a.huntTarget.y);
+    ctx.strokeStyle = 'rgba(77,166,255,0.12)';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+  }
+}
+
+function drawParticles() {
+  for (const p of particles) {
+    ctx.globalAlpha = p.life * p.life;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = p.color;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+}
+
+function drawGraph() {
+  const gw = gcv.width, gh = gcv.height;
+  gctx.clearRect(0, 0, gw, gh);
+  if (history.length < 2) return;
+
+  let maxVal = 10;
+  for (const h of history) maxVal = Math.max(maxVal, h.r, h.w, h.d);
+
+  function drawLine(key, color, fill) {
+    gctx.beginPath();
+    for (let i = 0; i < history.length; i++) {
+      const x = (i / (MAX_HIST - 1)) * gw;
+      const y = gh - (history[i][key] / maxVal) * gh * 0.95;
+      i === 0 ? gctx.moveTo(x, y) : gctx.lineTo(x, y);
+    }
+    // Filled area
+    const grad = gctx.createLinearGradient(0, 0, 0, gh);
+    grad.addColorStop(0, color.replace(')', ',0.25)').replace('rgb', 'rgba'));
+    grad.addColorStop(1, color.replace(')', ',0)').replace('rgb', 'rgba'));
+    gctx.strokeStyle = color;
+    gctx.lineWidth = 1.5;
+    gctx.shadowBlur = 4; gctx.shadowColor = color;
+    gctx.stroke();
+    gctx.shadowBlur = 0;
+    // Fill under line
+    gctx.lineTo((history.length-1)/(MAX_HIST-1)*gw, gh);
+    gctx.lineTo(0, gh);
+    gctx.closePath();
+    gctx.fillStyle = fill;
+    gctx.fill();
+  }
+
+  drawLine('r', '#ff4da6', 'rgba(255,77,166,0.08)');
+  drawLine('w', '#4da6ff', 'rgba(77,166,255,0.08)');
+  drawLine('d', '#ff8a3d', 'rgba(255,138,61,0.08)');
+}
+
+// ── Simulation tick ───────────────────────────────────────
+let tick = 0, speed = 1, paused = false;
+
+function simStep() {
+  tick++;
+
+  if (tick % 100 === 0) {
+    rabbits = rabbits.filter(a => !a.dead);
+    wolves  = wolves.filter(a => !a.dead);
+    deer    = deer.filter(a => !a.dead);
+  }
+
+  updateGrass();
+  buildHash(all());
+  rabbits.forEach(updateRabbit);
+  wolves.forEach(updateWolf);
+  deer.forEach(updateDeer);
+  updateParticles();
+  if (tick % 40 === 0) recordHistory();
+
+  // Extinction rescue
+  const warn = document.getElementById('warn');
+  const rc = living(rabbits).length, wc = living(wolves).length;
+  if (rc === 0 && tick > 300) {
+    for (let i = 0; i < 15; i++) rabbits.push(mkEntity(RABBIT));
+    warn.textContent = '⚠ Rabbit extinction! Respawning herd…';
+    warn.style.display = 'block';
+    setTimeout(() => { warn.style.display = 'none'; }, 3000);
+  } else if (wc === 0 && tick > 300) {
+    for (let i = 0; i < 4; i++) wolves.push(mkEntity(WOLF));
+    warn.textContent = '⚠ Wolf extinction! Respawning pack…';
+    warn.style.display = 'block';
+    setTimeout(() => { warn.style.display = 'none'; }, 3000);
+  }
+}
+
+// ── Main RAF loop ─────────────────────────────────────────
+let lastTs = 0, accumulator = 0;
+const TARGET_DT = 1000 / 60;
+
+function loop(ts) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(ts - lastTs, 100);
+  lastTs = ts;
+  accumulator += dt * speed;
+
+  const steps = Math.floor(accumulator / TARGET_DT);
+  accumulator -= steps * TARGET_DT;
+
+  for (let i = 0; i < Math.min(steps, 8); i++) simStep();
+
+  // Render
+  ctx.fillStyle = '#04040e';
+  ctx.fillRect(0, 0, W, H);
+
+  drawGrass();
+  drawParticles();
+  ctx.shadowBlur = 0;
+  for (const r of rabbits) drawAnimal(r);
+  for (const d of deer) drawAnimal(d);
+  for (const w of wolves) drawAnimal(w);
+  ctx.shadowBlur = 0;
+
+  // HUD stats
+  const rc = living(rabbits).length;
+  const wc = living(wolves).length;
+  const dc = living(deer).length;
+  document.getElementById('cnt-r').textContent = rc;
+  document.getElementById('cnt-w').textContent = wc;
+  document.getElementById('cnt-d').textContent = dc;
+  document.getElementById('day-lbl').textContent = `DAY ${(tick / 60 | 0) + 1}`;
+
+  drawGraph();
+}
+
+// ── Controls ──────────────────────────────────────────────
+let spawnMode = 'r';
+const modeKeys = { r:'active-r', w:'active-w', d:'active-d', g:'active-g' };
+
+function setMode(m) {
+  spawnMode = m;
+  ['r','w','d','g'].forEach(k => {
+    const b = document.getElementById('mbtn-' + k);
+    b.className = 'mbtn' + (k === m ? ' ' + modeKeys[k] : '');
+  });
+}
+
+function setSpeed(s) {
+  speed = s;
+  document.querySelectorAll('.sbtn').forEach((b, i) => {
+    b.classList.toggle('on', [0.5,1,2,5][i] === s);
+  });
+}
+
+function resetSim() {
+  rabbits = []; wolves = []; deer = [];
+  particles = []; history.length = 0; tick = 0;
+  initGrass();
+  spawnInitial();
+}
+
+function spawnInitial() {
+  for (let i = 0; i < 35; i++) rabbits.push(mkEntity(RABBIT));
+  for (let i = 0; i < 7;  i++) wolves.push(mkEntity(WOLF));
+  for (let i = 0; i < 20; i++) deer.push(mkEntity(DEER));
+}
+
+cv.addEventListener('click', e => {
+  const x = e.clientX, y = e.clientY;
+  if (y < HUD || y > H - GBAR) return;
+
+  if (spawnMode === 'r') {
+    for (let i = 0; i < 4; i++) rabbits.push(mkEntity(RABBIT, x + (Math.random()-0.5)*35, y + (Math.random()-0.5)*35));
+    burst(x, y, '#ff4da6', 10, 2.5);
+  } else if (spawnMode === 'w') {
+    wolves.push(mkEntity(WOLF, x, y));
+    burst(x, y, '#4da6ff', 10, 2.5);
+  } else if (spawnMode === 'd') {
+    for (let i = 0; i < 2; i++) deer.push(mkEntity(DEER, x + (Math.random()-0.5)*30, y + (Math.random()-0.5)*30));
+    burst(x, y, '#ff8a3d', 10, 2.5);
+  } else if (spawnMode === 'g') {
+    const { col, row } = worldToCell(x, y);
+    for (let dc = -4; dc <= 4; dc++) for (let dr = -4; dr <= 4; dr++) {
+      const c2 = col + dc, r2 = row + dr;
+      if (c2 < 0 || c2 >= COLS || r2 < 0 || r2 >= ROWS) continue;
+      const dist = Math.hypot(dc, dr);
+      if (dist <= 4) grass[gi(c2, r2)] = Math.min(1.0, grass[gi(c2, r2)] + 0.6 * (1 - dist / 5));
+    }
+    burst(x, y, '#00e84d', 12, 2.2);
+  }
+});
+
+// Drag to spawn
+let dragging = false;
+cv.addEventListener('pointerdown', () => dragging = true);
+cv.addEventListener('pointerup',   () => dragging = false);
+cv.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  const x = e.clientX, y = e.clientY;
+  if (y < HUD || y > H - GBAR) return;
+  if (spawnMode === 'g') {
+    const { col, row } = worldToCell(x, y);
+    const idx = gi(Math.max(0,Math.min(COLS-1,col)), Math.max(0,Math.min(ROWS-1,row)));
+    if (idx >= 0 && idx < grass.length) grass[idx] = Math.min(1.0, grass[idx] + 0.04);
+  }
+});
+
+// Fade toast
+setTimeout(() => {
+  const t = document.getElementById('toast');
+  t.style.opacity = '0';
+  setTimeout(() => t.remove(), 600);
+}, 3500);
+
+// ── Boot ──────────────────────────────────────────────────
+resize();
+spawnInitial();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
