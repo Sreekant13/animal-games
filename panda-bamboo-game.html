@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panda's Bamboo Feast</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d1f0d;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    user-select: none;
+  }
+  h1 {
+    color: #7CFC00;
+    font-size: 22px;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px #4CAF50;
+  }
+  canvas {
+    border: 3px solid #4CAF50;
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(76,175,80,0.4);
+    display: block;
+  }
+  #controls {
+    margin-top: 10px;
+    color: #81C784;
+    font-size: 13px;
+    text-align: center;
+    line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+<h1>🐼 PANDA'S BAMBOO FEAST 🎋</h1>
+<canvas id="c" width="420" height="520"></canvas>
+<div id="controls">
+  ← → Arrow Keys or A/D to move &nbsp;|&nbsp; Tap left/right side on mobile
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+let state = 'start';
+let score = 0, lives = 3, level = 1, combo = 0, frameCount = 0;
+let items = [], particles = [], flashTimer = 0, flashColor = '';
+let hiScore = 0;
+
+const panda = { x: W/2 - 28, y: H - 80, w: 56, h: 60, speed: 6, left: false, right: false };
+
+// ─── Drawing helpers ──────────────────────────────────────────────
+function ellipse(x, y, rx, ry, color, stroke) {
+  ctx.beginPath();
+  ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI*2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.5; ctx.stroke(); }
+}
+
+function drawPanda(x, y, w, h) {
+  const cx = x + w/2, cy = y + h/2;
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath(); ctx.ellipse(cx, y+h+4, 22, 6, 0, 0, Math.PI*2); ctx.fill();
+
+  // Body
+  ellipse(cx, cy+6, 22, 20, 'white', '#ccc');
+  // Head
+  ellipse(cx, cy-18, 18, 16, 'white', '#ccc');
+  // Ears
+  ellipse(cx-13, cy-31, 8, 8, '#222');
+  ellipse(cx+13, cy-31, 8, 8, '#222');
+  ellipse(cx-13, cy-31, 4, 4, '#444');
+  ellipse(cx+13, cy-31, 4, 4, '#444');
+  // Eye patches
+  ctx.save(); ctx.translate(cx-8, cy-20); ctx.rotate(-0.3);
+  ctx.beginPath(); ctx.ellipse(0,0,7,5,0,0,Math.PI*2); ctx.fillStyle='#222'; ctx.fill(); ctx.restore();
+  ctx.save(); ctx.translate(cx+8, cy-20); ctx.rotate(0.3);
+  ctx.beginPath(); ctx.ellipse(0,0,7,5,0,0,Math.PI*2); ctx.fillStyle='#222'; ctx.fill(); ctx.restore();
+  // Eyes
+  ellipse(cx-8, cy-21, 3, 3, 'white');
+  ellipse(cx+8, cy-21, 3, 3, 'white');
+  ellipse(cx-7, cy-20, 2, 2, '#111');
+  ellipse(cx+9, cy-20, 2, 2, '#111');
+  // Eye shine
+  ellipse(cx-6, cy-21, 1, 1, 'white');
+  ellipse(cx+10, cy-21, 1, 1, 'white');
+  // Nose
+  ellipse(cx, cy-13, 4, 3, '#555');
+  // Mouth
+  ctx.beginPath(); ctx.strokeStyle='#777'; ctx.lineWidth=1.5;
+  ctx.moveTo(cx-3, cy-10); ctx.quadraticCurveTo(cx, cy-7, cx+3, cy-10); ctx.stroke();
+  // Arms (black patches)
+  ctx.save(); ctx.translate(cx-20, cy+4); ctx.rotate(-0.4);
+  ellipse(0,0,7,12,'#222'); ctx.restore();
+  ctx.save(); ctx.translate(cx+20, cy+4); ctx.rotate(0.4);
+  ellipse(0,0,7,12,'#222'); ctx.restore();
+  // Legs
+  ellipse(cx-10, cy+24, 9, 7, '#222');
+  ellipse(cx+10, cy+24, 9, 7, '#222');
+}
+
+function drawBambooItem(item) {
+  const x = item.x, y = item.y;
+  if (item.type === 'bamboo') {
+    // Stalk
+    ctx.fillStyle = '#4CAF50';
+    ctx.beginPath();
+    ctx.roundRect(x+8, y, 8, item.h, 3);
+    ctx.fill();
+    ctx.strokeStyle = '#2E7D32'; ctx.lineWidth = 1;
+    for (let i = 8; i < item.h; i += 10) {
+      ctx.beginPath(); ctx.moveTo(x+8, y+i); ctx.lineTo(x+16, y+i); ctx.stroke();
+    }
+    // Leaves
+    ctx.fillStyle = '#66BB6A';
+    ctx.save(); ctx.translate(x+8, y+5); ctx.rotate(-0.4);
+    ctx.beginPath(); ctx.ellipse(0,0,12,4,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+    ctx.save(); ctx.translate(x+16, y+12); ctx.rotate(0.4);
+    ctx.beginPath(); ctx.ellipse(0,0,12,4,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+  } else if (item.type === 'hazard') {
+    // Rock / red X ball
+    const r = 13;
+    const grd = ctx.createRadialGradient(x+r-3, y+r-3, 2, x+r, y+r, r);
+    grd.addColorStop(0, '#EF9A9A'); grd.addColorStop(1, '#B71C1C');
+    ctx.beginPath(); ctx.arc(x+r, y+r, r, 0, Math.PI*2);
+    ctx.fillStyle = grd; ctx.fill();
+    ctx.strokeStyle = 'white'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(x+6,y+6); ctx.lineTo(x+r*2-6, y+r*2-6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x+r*2-6,y+6); ctx.lineTo(x+6, y+r*2-6); ctx.stroke();
+    // Label
+    ctx.fillStyle='white'; ctx.font='bold 8px Arial'; ctx.textAlign='center';
+    ctx.fillText('BAD', x+r, y+r*2+10);
+  } else if (item.type === 'star') {
+    // Bonus star
+    ctx.save();
+    ctx.translate(x+13, y+13);
+    ctx.fillStyle = '#FFD700';
+    drawStar(0,0,13,6,5);
+    ctx.fillStyle = '#FFF59D';
+    drawStar(0,0,7,3,5);
+    ctx.restore();
+    ctx.fillStyle='#FFF'; ctx.font='bold 8px Arial'; ctx.textAlign='center';
+    ctx.fillText('+50', x+13, y+32);
+  }
+}
+
+function drawStar(cx, cy, outerR, innerR, points) {
+  ctx.beginPath();
+  for (let i = 0; i < points*2; i++) {
+    const r = i%2===0 ? outerR : innerR;
+    const a = (i * Math.PI / points) - Math.PI/2;
+    i===0 ? ctx.moveTo(cx+r*Math.cos(a), cy+r*Math.sin(a))
+           : ctx.lineTo(cx+r*Math.cos(a), cy+r*Math.sin(a));
+  }
+  ctx.closePath(); ctx.fill();
+}
+
+function drawBackground() {
+  // Sky
+  const sky = ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,'#87CEEB'); sky.addColorStop(0.75,'#B0E2E8'); sky.addColorStop(1,'#C8F0C0');
+  ctx.fillStyle = sky; ctx.fillRect(0,0,W,H);
+
+  // Clouds
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  drawCloud(55,50,0.9); drawCloud(290,35,1.2); drawCloud(170,75,0.7); drawCloud(370,65,0.8);
+
+  // Trees
+  drawTree(10, 160); drawTree(370, 190); drawTree(185, 115);
+
+  // Ground
+  ctx.fillStyle = '#4CAF50'; ctx.fillRect(0, H-50, W, 50);
+  ctx.fillStyle = '#388E3C'; ctx.fillRect(0, H-50, W, 6);
+  // Grass tufts
+  ctx.strokeStyle = '#2E7D32'; ctx.lineWidth = 2;
+  for (let i = 15; i < W; i += 30) {
+    ctx.beginPath(); ctx.moveTo(i, H-50); ctx.lineTo(i-5, H-58); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(i+5, H-50); ctx.lineTo(i+3, H-60); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(i+10, H-50); ctx.lineTo(i+15, H-57); ctx.stroke();
+  }
+}
+
+function drawCloud(x, y, s) {
+  ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+  ctx.beginPath();
+  ctx.arc(0,0,18,0,Math.PI*2); ctx.arc(22,-6,22,0,Math.PI*2);
+  ctx.arc(44,0,16,0,Math.PI*2);
+  ctx.fill(); ctx.restore();
+}
+
+function drawTree(x, h) {
+  ctx.fillStyle = '#6D4C41';
+  ctx.fillRect(x+10, H-50-h, 14, h);
+  ctx.fillStyle = '#1B5E20';
+  ctx.beginPath(); ctx.moveTo(x,H-50-h+60); ctx.lineTo(x+34,H-50-h+60); ctx.lineTo(x+17,H-50-h+10); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#2E7D32';
+  ctx.beginPath(); ctx.moveTo(x+3,H-50-h+42); ctx.lineTo(x+31,H-50-h+42); ctx.lineTo(x+17,H-50-h); ctx.closePath(); ctx.fill();
+}
+
+function drawHUD() {
+  // Score box
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.beginPath(); ctx.roundRect(8,8,120,34,8); ctx.fill();
+  ctx.fillStyle = 'white'; ctx.font = 'bold 15px Arial'; ctx.textAlign = 'left';
+  ctx.fillText(`Score: ${score}`, 16, 30);
+
+  // Level
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.beginPath(); ctx.roundRect(W/2-40,8,80,34,8); ctx.fill();
+  ctx.fillStyle = '#FFD700'; ctx.font = 'bold 15px Arial'; ctx.textAlign = 'center';
+  ctx.fillText(`LVL ${level}`, W/2, 30);
+
+  // Lives
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.beginPath(); ctx.roundRect(W-85,8,76,34,8); ctx.fill();
+  ctx.font = '18px Arial'; ctx.textAlign = 'right';
+  let h = '';
+  for(let i=0;i<3;i++) h += i < lives ? '❤️' : '🖤';
+  ctx.fillText(h, W-12, 30);
+
+  // Combo
+  if (combo >= 2) {
+    ctx.fillStyle = `hsl(${(frameCount*4)%360},90%,60%)`;
+    ctx.font = `bold ${Math.min(22, 14+combo)}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.fillText(`COMBO x${combo}!`, W/2, 58);
+  }
+
+  // Flash overlay
+  if (flashTimer > 0) {
+    ctx.fillStyle = flashColor;
+    ctx.globalAlpha = flashTimer / 15 * 0.25;
+    ctx.fillRect(0,0,W,H);
+    ctx.globalAlpha = 1;
+    flashTimer--;
+  }
+}
+
+function drawParticles() {
+  particles.forEach(p => {
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle = p.color;
+    ctx.font = `${p.size}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.fillText(p.emoji || '●', p.x, p.y);
+  });
+  ctx.globalAlpha = 1;
+}
+
+function burst(x, y, color, emoji, count=8) {
+  for (let i = 0; i < count; i++) {
+    const a = (Math.PI*2/count)*i;
+    particles.push({ x, y, vx: Math.cos(a)*3.5, vy: Math.sin(a)*3.5 - 1,
+      life: 1, color, emoji, size: 14 });
+  }
+}
+
+function floatText(x, y, text, color) {
+  particles.push({ x, y, vx:0, vy:-1.5, life:1, color, emoji: text, size: 16, isText:true });
+}
+
+function overlay(title, sub1, sub2, btnLabel) {
+  ctx.fillStyle = 'rgba(0,30,0,0.72)';
+  ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = 'white'; ctx.font = 'bold 36px Arial'; ctx.textAlign = 'center';
+  ctx.fillText(title, W/2, H/2-80);
+  if(sub1) { ctx.font='18px Arial'; ctx.fillStyle='#B0FFB0'; ctx.fillText(sub1, W/2, H/2-42); }
+  if(sub2) { ctx.font='16px Arial'; ctx.fillStyle='#80D080'; ctx.fillText(sub2, W/2, H/2-15); }
+  // Button
+  ctx.fillStyle = '#4CAF50';
+  ctx.beginPath(); ctx.roundRect(W/2-75, H/2+20, 150, 50, 12); ctx.fill();
+  ctx.fillStyle = 'white'; ctx.font = 'bold 20px Arial';
+  ctx.fillText(btnLabel, W/2, H/2+52);
+}
+
+// ─── Game logic ───────────────────────────────────────────────────
+function spawnItem() {
+  const x = Math.random() * (W - 30);
+  const r = Math.random();
+  let type;
+  if (r < 0.04 + level*0.005) type = 'star';
+  else if (r < 0.22 + level*0.025) type = 'hazard';
+  else type = 'bamboo';
+  items.push({
+    x, y: -35, w: 26, h: 30,
+    speed: 1.8 + level*0.45 + Math.random()*1.2,
+    type
+  });
+}
+
+function update() {
+  if (state !== 'playing') return;
+  frameCount++;
+
+  // Move panda
+  if (panda.left)  panda.x = Math.max(0, panda.x - panda.speed);
+  if (panda.right) panda.x = Math.min(W - panda.w, panda.x + panda.speed);
+
+  // Spawn
+  const rate = Math.max(22, 68 - level*5);
+  if (frameCount % rate === 0) spawnItem();
+
+  // Level up every 150 points
+  level = 1 + Math.floor(score / 150);
+
+  // Update items
+  for (let i = items.length - 1; i >= 0; i--) {
+    const it = items[i];
+    it.y += it.speed;
+
+    const hit = it.x + it.w > panda.x && it.x < panda.x + panda.w &&
+                it.y + it.h > panda.y && it.y < panda.y + panda.h;
+    if (hit) {
+      if (it.type === 'bamboo') {
+        combo++;
+        const pts = 10 * (combo >= 3 ? 2 : 1);
+        score += pts;
+        burst(it.x+13, it.y+13, '#4CAF50', '🎋', 6);
+        floatText(it.x+13, it.y, `+${pts}`, '#A5D6A7');
+        flashTimer=8; flashColor='rgba(100,255,100,1)';
+      } else if (it.type === 'star') {
+        score += 50; combo++;
+        burst(it.x+13, it.y+13, '#FFD700', '⭐', 10);
+        floatText(it.x+13, it.y, '+50', '#FFD700');
+        flashTimer=10; flashColor='rgba(255,220,0,1)';
+      } else {
+        lives--; combo = 0;
+        burst(it.x+13, it.y+13, '#EF5350', '💥', 8);
+        floatText(it.x+13, it.y, '-LIFE', '#EF5350');
+        flashTimer=12; flashColor='rgba(255,0,0,1)';
+        if (lives <= 0) { hiScore = Math.max(hiScore, score); state='gameover'; }
+      }
+      items.splice(i,1);
+      continue;
+    }
+
+    if (it.y > H) {
+      if (it.type === 'bamboo') { lives--; combo=0; flashTimer=8; flashColor='rgba(255,100,0,1)';
+        if(lives<=0){ hiScore=Math.max(hiScore,score); state='gameover'; } }
+      items.splice(i,1);
+    }
+  }
+
+  // Update particles
+  for (let i = particles.length-1; i>=0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy; p.life -= 0.04;
+    if (p.life <= 0) particles.splice(i,1);
+  }
+}
+
+function render() {
+  ctx.clearRect(0,0,W,H);
+  drawBackground();
+  items.forEach(drawBambooItem);
+  drawPanda(panda.x, panda.y, panda.w, panda.h);
+  drawParticles();
+  drawHUD();
+
+  if (state === 'start') {
+    overlay('🐼 BAMBOO FEAST','Catch 🎋 bamboo, avoid ❌ bad balls','Stars ⭐ = +50 bonus!','PLAY');
+  } else if (state === 'gameover') {
+    overlay('GAME OVER 🐼',`Score: ${score}  |  Level: ${level}`,`Best: ${hiScore}`,'PLAY AGAIN');
+  }
+}
+
+function loop() { update(); render(); requestAnimationFrame(loop); }
+
+function resetGame() {
+  score=0; lives=3; level=1; combo=0; frameCount=0;
+  items=[]; particles=[]; flashTimer=0;
+  panda.x=W/2-28;
+  state='playing';
+}
+
+function tryStart(cx, cy) {
+  if (state==='start'||state==='gameover') {
+    const bx=W/2-75, by=H/2+20;
+    if(cx>bx&&cx<bx+150&&cy>by&&cy<by+50) resetGame();
+  }
+}
+
+// ─── Keyboard ────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') panda.left=true;
+  if(e.key==='ArrowRight'||e.key==='d'||e.key==='D') panda.right=true;
+  if(e.key===' '||e.key==='Enter') { if(state!=='playing') resetGame(); }
+});
+document.addEventListener('keyup', e => {
+  if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') panda.left=false;
+  if(e.key==='ArrowRight'||e.key==='d'||e.key==='D') panda.right=false;
+});
+
+// ─── Mouse ───────────────────────────────────────────────────────
+canvas.addEventListener('click', e => {
+  const r=canvas.getBoundingClientRect();
+  tryStart(e.clientX-r.left, e.clientY-r.top);
+});
+
+// ─── Touch ───────────────────────────────────────────────────────
+let touchId = null;
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const r=canvas.getBoundingClientRect();
+  const t=e.changedTouches[0];
+  tryStart(t.clientX-r.left, t.clientY-r.top);
+  touchId=t.identifier;
+  const tx=t.clientX-r.left;
+  panda.left = tx < W/2;
+  panda.right = tx >= W/2;
+}, {passive:false});
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const r=canvas.getBoundingClientRect();
+  for(const t of e.changedTouches) {
+    if(t.identifier===touchId) {
+      const tx=t.clientX-r.left;
+      panda.left = tx < W/2; panda.right = tx >= W/2;
+    }
+  }
+}, {passive:false});
+
+canvas.addEventListener('touchend', e => {
+  e.preventDefault();
+  panda.left=false; panda.right=false; touchId=null;
+}, {passive:false});
+
+loop();
+</script>
+</body>
+</html>
