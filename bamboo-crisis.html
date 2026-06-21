@@ -19,7 +19,7 @@ body{background:#0a1a0a;color:#e8f5e9;font-family:'Segoe UI',Arial,sans-serif;di
 .iconbtn{background:#1a2e1a;border:1px solid #2E7D32;color:#81C784;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:13px}
 .iconbtn:hover{background:#2E7D32}
 #main{display:flex;flex:1;overflow:hidden}
-#mapwrap{position:relative;flex-shrink:0}
+#mapwrap{position:relative;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#071207}
 canvas{display:block;cursor:crosshair}
 #sidebar{width:228px;background:#071207;border-left:2px solid #1B5E20;display:flex;flex-direction:column;padding:7px;gap:6px;overflow-y:auto;flex-shrink:0}
 .card{background:#0d1f0d;border:1px solid #2E7D32;border-radius:7px;padding:8px}
@@ -40,8 +40,8 @@ canvas{display:block;cursor:crosshair}
 #ov p{color:#BDBDBD;font-size:12px;margin-bottom:14px;line-height:1.5}
 #ovb{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .ob{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-weight:bold;font-size:12px}
-.tt{position:absolute;background:#071207;border:1px solid #4CAF50;border-radius:5px;padding:5px 8px;font-size:10px;color:#C8E6C9;pointer-events:none;z-index:100;display:none;max-width:150px;line-height:1.6}
-#mind{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.85);border:1px solid #4CAF50;border-radius:4px;padding:3px 7px;font-size:10px;color:#A5D6A7;display:none;pointer-events:none}
+.tt{position:fixed;background:#071207;border:1px solid #4CAF50;border-radius:5px;padding:5px 8px;font-size:10px;color:#C8E6C9;pointer-events:none;z-index:100;display:none;max-width:150px;line-height:1.6}
+#mind{position:fixed;bottom:66px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.88);border:1px solid #4CAF50;border-radius:4px;padding:4px 10px;font-size:11px;color:#A5D6A7;display:none;pointer-events:none;z-index:50}
 .snrow{display:flex;gap:4px;align-items:center;margin-bottom:3px}
 </style>
 </head>
@@ -576,7 +576,9 @@ canvas.addEventListener('mousemove',e=>{
   if(r<0||r>=ROWS||c<0||c>=COLS){tt.style.display='none';return;}
   const here=pandas.filter(p=>p.r===r&&p.c===c),t=grid[r][c].type;
   if(here.length||t===CITY||t===BAMBOO||t===BARRIER){
-    tt.style.display='block';tt.style.left=(c*CS+CS+4)+'px';tt.style.top=Math.max(0,r*CS-10)+'px';
+    tt.style.display='block';
+    tt.style.left=(e.clientX+14)+'px';
+    tt.style.top=Math.max(0,e.clientY-30)+'px';
     const nm={[EMPTY]:'Grass',[BAMBOO]:'Bamboo',[CITY]:'City',[BARRIER]:'Barrier',[WATER]:'Water'};
     tt.innerHTML=`<b>${nm[t]}</b>${here.length?'<br>'+here.map(p=>`🐼 ${p.name} ❤️${Math.round(p.health)}%`).join('<br>'):''}`;
   }else tt.style.display='none';
@@ -588,6 +590,16 @@ document.addEventListener('keydown',e=>{
 });
 
 // ── Init ────────────────────────────────────────────────────────────
+function fitCanvas(){
+  const wrap=document.getElementById('mapwrap');
+  const aw=wrap.clientWidth,ah=wrap.clientHeight;
+  if(!aw||!ah)return;
+  const scale=Math.min(aw/W,ah/H);
+  canvas.style.width=Math.floor(W*scale)+'px';
+  canvas.style.height=Math.floor(H*scale)+'px';
+}
+window.addEventListener('resize',()=>{fitCanvas();render();});
+
 function initGame(){
   month=0;funds=500;mode=null;negoMo=0;campMo=0;
   gameOver=false;paused=false;crisisLock=false;emergUsed=false;pandaUID=0;
@@ -595,7 +607,7 @@ function initGame(){
   ['rhe','rto','rco'].forEach(id=>{const el=document.getElementById(id);if(el){el.disabled=false;el.style.opacity='1';}});
   document.getElementById('mind').style.display='none';
   setSpeed(1);makeGrid();placePandas();checkSaveExists();
-  updateUI();render();
+  updateUI();render();fitCanvas();
   addLog(`🌿 Sanctuary opens — ${SEASONS[getSeason()].label}. Reach 15 pandas in 60 months!`,'i');
 }
 
